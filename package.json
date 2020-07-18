@@ -1,0 +1,29 @@
+{
+  "name": "burgerbogo-api-server",
+  "version": "1.0.0",
+  "description": "버거보고 프로젝트 API 서버",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --exec babel-node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NSM-inc/burgerbogo-api-server.git"
+  },
+  "author": "Jihye Kim, Minseok Seo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NSM-inc/burgerbogo-api-server/issues"
+  },
+  "homepage": "https://github.com/NSM-inc/burgerbogo-api-server#readme",
+  "dependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/node": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
