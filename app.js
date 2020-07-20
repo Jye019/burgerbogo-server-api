@@ -1,7 +1,10 @@
 import express from "express";
 import join from "./routes/join";
+import Sequelize from "./models/index";
 
 const app = express();
+
+Sequelize.sequelize.sync();
 
 app.get("/", (req, res, next) => {
   res.send("success!");
