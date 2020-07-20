@@ -1,9 +1,11 @@
 import express from "express";
+import userModel from "../models/user";
  
 const router = express.Router();
 
-router.get('/', (req, res) => {
-    res.send("회원가입 페이지!!!");
+router.get('/', async(req, res) => {
+    const users = await userModel.findAll();
+    res.send(users);
 });
 
 export default router;
