@@ -6,10 +6,10 @@ const app = express();
 
 Sequelize.sequelize.sync();
 
-app.get("/", (req, res, next) => {
+app.get("/", (req, res) => {
   res.send("success!");
 });
-app.use('/join', join);
+app.use("/join", join);
 
 app.listen(3000, () => {
   console.log(`Listening at port 3000`);

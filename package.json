@@ -21,11 +21,15 @@
     "@babel/core": "^7.10.5",
     "@babel/node": "^7.10.5",
     "@babel/preset-env": "^7.10.4",
+    "eslint-config-prettier": "^6.11.0",
     "express": "^4.17.1",
     "mysql2": "^2.1.0",
     "sequelize": "^6.3.3"
   },
   "devDependencies": {
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
     "nodemon": "^2.0.4"
   }
 }
