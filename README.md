@@ -1,5 +1,17 @@
 # burgerbogo-api-server
 
+## 개발 환경
+
+### Node 13.11.0
+
+### Express
+
+### Sequelize
+
+### Babel
+
+### ESLint
+
 ## AWS RDS MySQL DB 생성
 
 ### 생성 방식
