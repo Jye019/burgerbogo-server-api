@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "root",
-    "password": "wnlgP0109!",
-    "database": "bg",
-    "host": "127.0.0.1",
+    "username": "admin",
+    "password": null,
+    "database": "dev",
+    "host": "nsm-burgerbogo.civjzz8g5pvm.ap-northeast-2.rds.amazonaws.com",
     "dialect": "mysql"
   },
   "production": {

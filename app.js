@@ -1,14 +1,19 @@
-import express from 'express';
-import passport from 'passport';
-import auth from './routes/auth';
-import Sequelize from './models';
-import passportConfig from './passport';
+import express from "express";
+import join from "./routes/join";
+import SequelizeAuto from 'sequelize-auto';
 
 const app = express();
-// Sequelize.sequelize.sync();
-passportConfig(passport);
-
-Sequelize.sequelize.sync();
+const sequelize_auto = new SequelizeAuto('dev', 'admin', 'shTmfah1!', {
+  host: 'nsm-burgerbogo.civjzz8g5pvm.ap-northeast-2.rds.amazonaws.com',
+  port: '3306',
+  dialect: 'mysql',
+  additional: {
+    timestamps: false
+  }
+});
+sequelize_auto.run((err) => {
+  if(err) throw err;
+})
 
 app.get("/", (req, res) => {
   res.send("success!");
