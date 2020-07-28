@@ -1,12 +1,16 @@
 import express from "express";
-import join from "./routes/join";
+import auth from "./routes/auth";
 import SequelizeAuto from 'sequelize-auto';
+import path from 'path';
+
 
 const app = express();
-const sequelize_auto = new SequelizeAuto('dev', 'admin', 'shTmfah1!', {
-  host: 'nsm-burgerbogo.civjzz8g5pvm.ap-northeast-2.rds.amazonaws.com',
+const env = process.env.NODE_ENV || 'development';
+const config = require(path.join(__dirname + '/config/sequelize.json'))[env];
+const sequelize_auto = new SequelizeAuto(config.database, config.username, config.password, {
+  host: config.host,
   port: '3306',
-  dialect: 'mysql',
+  dialect: config.dialect,
   additional: {
     timestamps: false
   }
@@ -18,7 +22,7 @@ sequelize_auto.run((err) => {
 app.get("/", (req, res) => {
   res.send("success!");
 });
-app.use("/join", join);
+app.use("/auth", auth);
 
 app.listen(3000, () => {
   console.log('Listening at port 3000');
