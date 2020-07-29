@@ -8,6 +8,26 @@
 
 ### Sequelize
 
+Sequelize-Auto 를 사용해 모델 자동 생성
+
+모델 사용 방법
+
+```javascript
+import models from "./models";
+// models/index.js 임포트
+/* -----------생략----------- */
+app.get("/users", async (req, res, next) => {
+  const userModel = models.users; // models 객체에서 users 모델 가져옴
+  try {
+    const users = await userModel.findAll();
+    res.json(users);
+  } catch (err) {
+    next(err);
+  }
+});
+/* -----------생략----------- */
+```
+
 ### Babel
 
 ### ESLint

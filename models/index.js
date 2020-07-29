@@ -1,6 +1,7 @@
 var fs = require("fs");
 const path = require("path");
 const Sequelize = require("sequelize");
+const SequelizeAuto = require("sequelize-auto");
 
 const env = process.env.NODE_ENV || "development";
 const config = require(path.join(__dirname + "/../config/sequelize.json"))[env];
@@ -30,5 +31,24 @@ Object.keys(db).forEach((modelName) => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+
+db.generate = () => {
+  const auto = new SequelizeAuto(
+    config.database,
+    config.username,
+    config.password,
+    {
+      host: config.host,
+      port: "3306",
+      dialect: config.dialect,
+      additional: {
+        timestamps: false,
+      },
+    }
+  );
+  auto.run((err) => {
+    if (err) throw err;
+  });
+};
 
 module.exports = db;

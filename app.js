@@ -1,47 +1,34 @@
 import express from "express";
-import SequelizeAuto from "sequelize-auto";
 import auth from "./routes/auth";
-import seqConfig from "./config/sequelize.json";
 
 import models from "./models";
 
+// DB 변경 시에만 실행
+// models.generate();
+
 const app = express();
 
-const env = process.env.NODE_ENV || "development";
-const config = seqConfig[env];
+// 바디 파싱 미들웨어
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-const auto = new SequelizeAuto(
-  config.database,
-  config.username,
-  config.password,
-  {
-    host: config.host,
-    port: "3306",
-    dialect: config.dialect,
-    additional: {
-      timestamps: false,
-    },
-  }
-);
-auto.run((err) => {
-  if (err) throw err;
-});
+app.use("/auth", auth);
 
 app.get("/", async (req, res, next) => {
   const userModel = models.users;
-  userModel
-    .findAll()
-    .then((userList) => {
-      res.json(userList);
-    })
-    .catch((err) => {
-      next(err);
-    });
+  try {
+    const users = await userModel.findAll();
+    res.json(users);
+  } catch (err) {
+    next(err);
+  }
 });
-app.use("/auth", auth);
 
-app.use((req, res, err) => {
-  res.send(err.stack);
+// 에러 핸들러
+app.use((err, req, res, next) => {
+  console.log(err.stack);
+  res.status(500).json({ message: err.stack });
+  next();
 });
 
 app.listen(3000, () => {
