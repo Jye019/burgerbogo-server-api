@@ -40,7 +40,7 @@ app.get("/", async (req, res, next) => {
 });
 app.use("/auth", auth);
 
-app.use((err, req, res) => {
+app.use((req, res, err) => {
   res.send(err.stack);
 });
 
