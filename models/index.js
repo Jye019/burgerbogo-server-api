@@ -1,11 +1,9 @@
-// import fs from "fs";
-// import path from "path";
-import Sequelize from "sequelize";
-import seqConfig from "../config/sequelize.json";
+var fs = require("fs");
+const path = require("path");
+const Sequelize = require("sequelize");
 
 const env = process.env.NODE_ENV || "development";
-const config = seqConfig[env];
-
+const config = require(path.join(__dirname + "/../config/sequelize.json"))[env];
 const db = {};
 
 const sequelize = new Sequelize(
@@ -15,11 +13,14 @@ const sequelize = new Sequelize(
   config
 );
 
-/* -------------여기에 모델 가져옴-------------*/
-
-db.users = require("./users.js")(sequelize, Sequelize);
-
-/*--------------------------------------------*/
+fs.readdirSync(__dirname)
+  .filter((file) => {
+    return file.indexOf(".") !== 0 && file !== "index.js";
+  })
+  .forEach((file) => {
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize);
+    db[model.name] = model;
+  });
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
@@ -30,4 +31,4 @@ Object.keys(db).forEach((modelName) => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-export default db;
+module.exports = db;
