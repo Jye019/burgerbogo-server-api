@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import db from '../models';
+import { verifyToken, pwValidation } from './middleware';
 
 const router = express.Router();
 
@@ -13,32 +14,29 @@ router.post('/join', async (req, res) => {
                 email: req.body.email,
             }
         })
-
         if(exUser) {
             return res.status(409).json({
+                code: 409,
                 message: "username exists",
             })
         }
 
         // 비밀번호 validation 체크 
-        const pwdRegExp = /^.*(?=.{8,20})(?=.*[0-9])(?=.*[a-zA-Z]).*$/;
-        if (!pwdRegExp.test(req.body.password)) {
-            return res.status(409).json({
-                message: "invalid password",
-            });
-        } 
+        await pwValidation(req, res, async () => {
+            const hashedPassword = await bcrypt.hash(req.body.password, 12);
+            const newUser = await db.users.create({
+                email: req.body.email,
+                password: hashedPassword, 
+            })
         
-        // 계정 생성 
-        const hashedPassword = await bcrypt.hash(req.body.password, 12);
-        const newUser = await db.users.create({
-            email: req.body.email,
-            password: hashedPassword, 
-        })
-
-        return res.status(200).json(newUser);
+            return res.status(200).json(newUser);
+        });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ message: err.stack });
+        return res.status(500).json({ 
+            code: 500,
+            message: err.stack, 
+        });
     }    
 });
 
@@ -46,7 +44,7 @@ router.post('/login', async (req, res) => {
     try {
         // 로그인 
         const userInfo = await db.users.findOne({
-            attributes: ['id', 'password'],
+            attributes: ['id', 'password', 'nickname'],
             where : {
                 email: req.body.email,
             }
@@ -59,25 +57,48 @@ router.post('/login', async (req, res) => {
             if(match) { 
                 const token = await jwt.sign(
                     {
-                        id : userInfo.id,
+                        id: userInfo.id,
+                        nickname: userInfo.nickname,
                     }, 
                     (process.env.JWT_SECRET || 'xu5q!p1'),
                     {
-                        expiresIn: '30m'
+                        expiresIn: '30m',
+                        issuer: 'nsm',
                     }
                 )
-                res.cookie("jwt", token);
-                return res.status(200).json(token);
+                // cookie에 저장
+                res.cookie('jwt', token, { httpOnly: true, maxAge: 1000 * 60 * 30})
+                return res.json({
+                    code: 200,
+                    message: 'session issuance',
+                    token
+                });
             } 
         } 
     
         return res.status(401).json({
+            code: 401,
             message: "incorrect login info",
         })
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ message: err.stack });
+        return res.status(500).json({ 
+            code: 500, 
+            message: err.stack 
+        });
     }
 })
+
+// jwt 확인
+router.get('/verify', verifyToken, (req, res) => {
+    res.json(req.decoded);
+})
+
+// 최초 로그인 시 추가 개인정보 등록 
+
+
+// 로그아웃
+
+
 
 export default router;
