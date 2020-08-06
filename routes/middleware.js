@@ -4,7 +4,9 @@ exports.isLoggedIn = (req, res, next) => {
     if(req.isAuthoricated()) {
         next();
     } else {
-        req.status(403).send('로그인 필요');
+        res.status(403).send({
+            message: "isNotLoggedIn"
+        });
     }
 }
 
@@ -16,6 +18,15 @@ exports.isNotLoggedIn = (req, res, next) => {
     }
 }
 
-exports.verify = () => {
-    
+exports.verifyToken = (req, res, next) => {
+    const token = req.cookies.jwt;
+    const decoded = jwt.verify(token, (process.env.JWT_SECRET || 'xu5q!p1'));
+
+    if(decoded) {
+        next();
+    } else {
+        res.status(401).send({
+            message: 'not verified'
+        })
+    }
 }
