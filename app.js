@@ -1,6 +1,6 @@
 import express from "express";
+import dotenv from "dotenv";
 import auth from "./routes/auth";
-
 import models from "./models";
 
 // DB 변경 시에만 실행
@@ -12,7 +12,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/auth", auth);
+// env 설정
+dotenv.config();
 
 app.get("/", async (req, res, next) => {
   const userModel = models.users;
@@ -23,6 +24,8 @@ app.get("/", async (req, res, next) => {
     next(err);
   }
 });
+
+app.use("/auth", auth);
 
 // 에러 핸들러
 app.use((err, req, res, next) => {
