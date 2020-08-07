@@ -22,6 +22,7 @@ router.post('/join', async (req, res) => {
         }
 
         // 비밀번호 validation 체크 
+        // 분리 
         await pwValidation(req, res, async () => {
             const hashedPassword = await bcrypt.hash(req.body.password, 12);
             const newUser = await db.users.create({
@@ -92,10 +93,15 @@ router.post('/login', async (req, res) => {
 // jwt 확인
 router.get('/verify', verifyToken, (req, res) => {
     res.json(req.decoded);
-})
+});
+
+// 회원가입 후 인증 이메일 전송 
+router.get('/email', sendEmail);
 
 // 최초 로그인 시 추가 개인정보 등록 
-
+router.get('/detail', () => {
+    console.log(1);
+});
 
 // 로그아웃
 // 쿠키 삭제 
@@ -103,8 +109,5 @@ router.get('/verify', verifyToken, (req, res) => {
 // 이메일 전송 
 
 
-router.get('/email/crtf', sendEmail, (req, res) => {
-    console.log(1)
-})
 
 export default router;

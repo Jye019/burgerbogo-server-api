@@ -24,6 +24,10 @@ module.exports = function(sequelize, DataTypes) {
 		delete_at: {
 			type: DataTypes.DATE,
 			allowNull: true
+		},
+		subject: {
+			type: DataTypes.STRING(50),
+			allowNull: false
 		}
 	}, {
 		sequelize,
