@@ -226,10 +226,9 @@ router.get('/verify', middleware.verifyToken, (req, res) => {
 });
 
 // 로그아웃
-// 쿠키 삭제 np
+// 쿠키 삭제 
 
 // 이메일 전송 
-
 
 
 export default router;

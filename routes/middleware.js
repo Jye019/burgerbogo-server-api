@@ -82,3 +82,39 @@ exports.sendEmail = async (req) => {
 }
 
 // 이메일 발송 
+exports.sendEmail = async (req, res) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            auth: {
+                user: process.env.NSM_EMAIL,
+                pass: process.env.NSM_EMAIL_PW,
+            }
+        });
+
+        const email = await db.email_contents.findOne({
+            attributes: ['contents'],
+            where : {
+                id : 1,
+            }
+        })
+
+        const info = await transporter.sendMail({
+            from: `버거보고 <${process.env.NSM_EMAIL}>`,
+            to: req.body.email,
+            subject: '회원가입 이메일 인증',
+            html: email.contents,
+        });
+
+        return res.status(200).json({
+            code: 200,
+            message: 'Sent Auth Email',
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            code: 401,
+            message: 'fail email transport',
+        })
+    }
+}
