@@ -2,7 +2,7 @@ import express from "express";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import db from '../models';
-import { verifyToken, pwValidation } from './middleware';
+import { verifyToken, pwValidation, sendEmail } from './middleware';
 
 const router = express.Router();
 
@@ -98,7 +98,13 @@ router.get('/verify', verifyToken, (req, res) => {
 
 
 // 로그아웃
+// 쿠키 삭제 
+
+// 이메일 전송 
 
 
+router.get('/email/crtf', sendEmail, (req, res) => {
+    console.log(1)
+})
 
 export default router;
