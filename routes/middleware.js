@@ -93,23 +93,23 @@ exports.sendEmail = async (req, res) => {
         });
 
         const email = await db.email_contents.findOne({
-            attributes: ['contents'],
+            attributes: ['subject', 'contents'],
             where : {
-                id : 1,
+                id : req.body.emailId,
             }
         })
 
-        const info = await transporter.sendMail({
+        await transporter.sendMail({
             from: `버거보고 <${process.env.NSM_EMAIL}>`,
             to: req.body.email,
-            subject: '회원가입 이메일 인증',
+            subject: email.subject,
             html: email.contents,
         });
 
-        return res.status(200).json({
+        return res.status(200).send({
             code: 200,
-            message: 'Sent Auth Email',
-        });
+            message: 'success',
+        })
     } catch (err) {
         console.log(err);
         return res.status(500).json({
