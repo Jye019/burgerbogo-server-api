@@ -1,7 +1,13 @@
 import express from "express";
 import auth from "./routes/auth";
-
+import burger from "./routes/burger";
+import brand from "./routes/brand";
 import models from "./models";
+
+const env = process.env.NODE_ENV || "development";
+
+// MySQL Timeout 현상 방지
+models.preventDisconnection(env);
 
 // DB 변경 시에만 실행
 // models.generate();
@@ -13,6 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/auth", auth);
+app.use("/burger", burger);
+app.use("/brand", brand);
 
 app.get("/", async (req, res, next) => {
   const userModel = models.users;

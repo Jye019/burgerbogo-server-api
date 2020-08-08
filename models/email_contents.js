@@ -1,31 +1,15 @@
 /* jshint indent: 1 */
 
 module.exports = function(sequelize, DataTypes) {
-	return sequelize.define('users', {
+	return sequelize.define('email_contents', {
 		id: {
 			autoIncrement: true,
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			primaryKey: true
 		},
-		password: {
-			type: DataTypes.STRING(80),
-			allowNull: true
-		},
-		age: {
-			type: DataTypes.INTEGER.UNSIGNED,
-			allowNull: true
-		},
-		is_admin: {
-			type: DataTypes.INTEGER(1),
-			allowNull: true
-		},
-		nickname: {
-			type: DataTypes.STRING(20),
-			allowNull: true
-		},
-		email: {
-			type: DataTypes.STRING(30),
+		contents: {
+			type: DataTypes.TEXT,
 			allowNull: false
 		},
 		create_at: {
@@ -40,10 +24,14 @@ module.exports = function(sequelize, DataTypes) {
 		delete_at: {
 			type: DataTypes.DATE,
 			allowNull: true
+		},
+		subject: {
+			type: DataTypes.STRING(50),
+			allowNull: false
 		}
 	}, {
 		sequelize,
-		tableName: 'users',
+		tableName: 'email_contents',
 		timestamps: false
 	});
 };
