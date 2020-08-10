@@ -1,4 +1,5 @@
 import express from "express";
+import swaggerDoc from "./swaggerDoc";
 import auth from "./routes/auth";
 import burger from "./routes/burger";
 import brand from "./routes/brand";
@@ -13,10 +14,13 @@ models.preventDisconnection(env);
 // models.generate();
 
 const app = express();
+app.use(swaggerDoc);
 
 // 바디 파싱 미들웨어
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/auth", auth);
 app.use("/burger", burger);
