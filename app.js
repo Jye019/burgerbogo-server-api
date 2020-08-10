@@ -1,4 +1,5 @@
 import express from "express";
+import dotenv from "dotenv";
 import swaggerDoc from "./swaggerDoc";
 import auth from "./routes/auth";
 import burger from "./routes/burger";
@@ -25,6 +26,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/auth", auth);
 app.use("/burger", burger);
 app.use("/brand", brand);
+// env 설정
+dotenv.config();
 
 app.get("/", async (req, res, next) => {
   const userModel = models.users;
@@ -35,6 +38,8 @@ app.get("/", async (req, res, next) => {
     next(err);
   }
 });
+
+app.use("/auth", auth);
 
 // 에러 핸들러
 app.use((err, req, res, next) => {
