@@ -42,17 +42,6 @@ exports.verifyToken = (req, res, next) => {
     }
 }
 
-// 비밀번호 정규식 
-exports.pwValidation = (req, res, next) => {
-    const pwdRegExp = /^.*(?=.{8,20})(?=.*[0-9])(?=.*[a-zA-Z]).*$/;
-    if (pwdRegExp.test(req.body.password)) 
-        return next();
-    return res.status(409).json({
-        code: 409, 
-        message: "invalid password",
-    });
-}
-
 // 이메일 발송 
 exports.sendEmail = async (req, res) => {
     try {
