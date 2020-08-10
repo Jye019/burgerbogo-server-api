@@ -6,12 +6,12 @@ const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
-router.post("/add", async (req, res, next) => {
+router.post("/add", async (req, res) => {
   try {
-    const addBurger = await burger.create(req.body);
-    res.json(addBurger);
+    await burger.create(req.body);
+    res.status(200).json({ message: "성공" });
   } catch (err) {
-    next(err);
+    res.status(500).json({ message: "오류 발생" });
   }
 });
 
