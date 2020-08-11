@@ -8,9 +8,9 @@ const options = {
   // swagger문서 설정
   swaggerDefinition: {
     info: {
-      title: "Test API",
-      version: "1.0.0",
-      description: "Test API with express",
+      title: "버거보고 REST API",
+      version: "0.0.0",
+      description: "버거보고 REST API 정리 문서",
     },
     host: "localhost:3000",
     basePath: "/",

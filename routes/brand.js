@@ -41,7 +41,7 @@ router.use(express.urlencoded({ extended: false }));
  *          $ref: '#/definitions/newBrand'
  */
 
-router.post("/add", async (req, res, next) => {
+router.post("/add", async (req, res) => {
   try {
     await brand.create(req.body);
     res.status(200).json({ message: "성공" });
