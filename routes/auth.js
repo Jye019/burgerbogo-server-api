@@ -1,8 +1,10 @@
 import express from "express";
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import db from '../models';
-import { verifyToken, pwValidation, sendEmail } from './middleware';
+import middleware from './middleware';
+
 
 const router = express.Router();
 
@@ -35,22 +37,28 @@ router.post('/join', async (req, res) => {
         if(exUser) {
             return res.status(409).json({
                 code: 409,
-                message: "username exists",
+                message: "account exists",
             })
         } 
 
-        // 이메일 발송
- 
-        // 이메일 인증
+        // 계정 생성 및 이메일 인증
+        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 5);
+        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 5);
+        const verifyKey = key1 + key2; 
 
-         
-        // 계정 생성
-        const hashedPassword = await bcrypt.hash(req.body.password, 12);
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
         const newUser = await db.users.create({
             email: req.body.email,
             password: hashedPassword, 
+            verify_key : verifyKey,
         })
-    
+      
+        // 이메일 발송
+        const verifyLink = `https://${req.get('host')}/confirmEmail?key=${verifyKey}`;
+        req.body.verifyLink = verifyLink;
+        middleware.sendEmail(req, res);
+        
         return res.status(200).json(newUser);
     } catch (err) {
         console.error(err);
@@ -101,6 +109,7 @@ router.post('/login', async (req, res) => {
             code: 401,
             message: "incorrect login info",
         })
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
@@ -111,12 +120,12 @@ router.post('/login', async (req, res) => {
 })
 
 // jwt 확인
-router.get('/verify', verifyToken, (req, res) => {
+router.get('/verify', middleware.verifyToken, (req, res) => {
     res.json(req.decoded);
 });
 
 // 회원가입 후 인증 이메일 전송 
-router.get('/email', sendEmail);
+router.get('/email', middleware.sendEmail);
 
 // 최초 로그인 시 추가 개인정보 등록 
 router.get('/detail', () => {

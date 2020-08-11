@@ -66,11 +66,6 @@ exports.sendEmail = async (req, res) => {
             subject: email.subject,
             html: email.contents,
         });
-
-        return res.status(200).send({
-            code: 200,
-            message: 'success',
-        })
     } catch (err) {
         console.log(err);
         return res.status(500).json({
