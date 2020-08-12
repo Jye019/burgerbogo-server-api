@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
+import handlebars from 'handlebars';
 import db from '../models';
 
 // 로그인 상태인지 확인
@@ -54,17 +55,23 @@ exports.sendEmail = async (req, res) => {
         });
 
         const email = await db.email_contents.findOne({
-            attributes: ['subject', 'contents'],
+            attributes: ['id', 'subject', 'contents'],
             where : {
                 id : req.body.emailId,
             }
         })
 
+        const template = handlebars.compile(email.contents);
+        let contents = template();
+        if(email.id===1) {
+            contents = template({verifyLink: req.body.verifyLink});
+        }
+
         await transporter.sendMail({
             from: `버거보고 <${process.env.NSM_EMAIL}>`,
             to: req.body.email,
             subject: email.subject,
-            html: email.contents,
+            html: contents,
         });
     } catch (err) {
         console.log(err);

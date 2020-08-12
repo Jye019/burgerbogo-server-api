@@ -45,6 +45,10 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.INTEGER(1),
 			allowNull: true,
 			defaultValue: 0
+		},
+		verify_key: {
+			type: DataTypes.CHAR(10),
+			allowNull: true
 		}
 	}, {
 		sequelize,

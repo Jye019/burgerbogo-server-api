@@ -42,8 +42,8 @@ router.post('/join', async (req, res) => {
         } 
 
         // 계정 생성 및 이메일 인증
-        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 5);
-        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 5);
+        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
+        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
         const verifyKey = key1 + key2; 
 
         const salt = bcrypt.genSaltSync(10);
@@ -55,7 +55,7 @@ router.post('/join', async (req, res) => {
         })
       
         // 이메일 발송
-        const verifyLink = `https://${req.get('host')}/confirmEmail?key=${verifyKey}`;
+        const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
         req.body.verifyLink = verifyLink;
         middleware.sendEmail(req, res);
         
@@ -124,8 +124,27 @@ router.get('/verify', middleware.verifyToken, (req, res) => {
     res.json(req.decoded);
 });
 
-// 회원가입 후 인증 이메일 전송 
-router.get('/email', middleware.sendEmail);
+// 이메일 인증 확인
+router.get('/confirmEmail', async (req, res) => {
+    const user = await db.users.findOne({
+        where : {
+            verify_key : req.query.key,
+            verified: 0,
+        }
+    });
+
+    if(user) {
+        await db.users.update({verified: 1}, {
+            where: {
+                verify_key : req.query.key,
+            }
+        });
+
+        return res.send('<script type="text/javascript">alert("인증되었습니다."); window.location="/auth/detail"; </script>');
+    } 
+    
+    return res.send('<script type="text/javascript">alert("인증을 실패하였습니다."); window.location="/auth/join"; </script>');
+})
 
 // 최초 로그인 시 추가 개인정보 등록 
 router.get('/detail', () => {
