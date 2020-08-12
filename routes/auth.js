@@ -1,10 +1,10 @@
 import express from "express";
+import moment from 'moment';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import db from '../models';
 import middleware from './middleware';
-
 
 const router = express.Router();
 
@@ -73,7 +73,6 @@ router.post('/login', async (req, res) => {
     try {
         // 로그인 
         const userInfo = await db.users.findOne({
-            attributes: ['id', 'password', 'nickname'],
             where : {
                 email: req.body.email,
             }
@@ -119,17 +118,16 @@ router.post('/login', async (req, res) => {
     }
 })
 
-// jwt 확인
-router.get('/verify', middleware.verifyToken, (req, res) => {
-    res.json(req.decoded);
-});
-
 // 이메일 인증 확인
 router.get('/confirmEmail', async (req, res) => {
+    const expiredTime = moment().add(5, "minutes").format("YYYY-MM-DD hh:mm:ss");
+    console.log(expiredTime);
     const user = await db.users.findOne({
         where : {
             verify_key : req.query.key,
-            verified: 0,
+            create_at : {
+                lt : Date.parse(expiredTime),
+            }
         }
     });
 
@@ -140,19 +138,26 @@ router.get('/confirmEmail', async (req, res) => {
             }
         });
 
-        return res.send('<script type="text/javascript">alert("인증되었습니다."); window.location="/auth/detail"; </script>');
+        res.render('<script type="text/javascript">alert("인증되었습니다.");');
+        return res.redirect(200, '/auth/detail');
     } 
     
-    return res.send('<script type="text/javascript">alert("인증을 실패하였습니다."); window.location="/auth/join"; </script>');
+    res.status(401);
+    return res.send('<script type="text/javascript">alert("인증을 실패하였습니다."); window.location="/"; </script>');
 })
 
 // 최초 로그인 시 추가 개인정보 등록 
 router.get('/detail', () => {
-    console.log(1);
+    console.log(`${moment().add(5, "minutes").format("YYYY-MM-DD hh:mm:ss")}`);
+});
+
+// jwt 확인
+router.get('/verify', middleware.verifyToken, (req, res) => {
+    res.json(req.decoded);
 });
 
 // 로그아웃
-// 쿠키 삭제 
+// 쿠키 삭제 np
 
 // 이메일 전송 
 
