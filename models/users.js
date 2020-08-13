@@ -47,7 +47,7 @@ module.exports = function(sequelize, DataTypes) {
 			defaultValue: 0
 		},
 		verify_key: {
-			type: DataTypes.CHAR(10),
+			type: DataTypes.STRING(20),
 			allowNull: true
 		}
 	}, {
