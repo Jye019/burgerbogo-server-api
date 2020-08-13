@@ -120,13 +120,13 @@ router.post('/login', async (req, res) => {
 
 // 이메일 인증 확인
 router.get('/confirmEmail', async (req, res) => {
-    const expiredTime = moment().add(5, "minutes").format("YYYY-MM-DD hh:mm:ss");
-    console.log(expiredTime);
+    const expiredTime = moment().add(5, "minutes").format("YYYY-MM-DD HH:mm:ss");
+    const strExpiredTime = expiredTime.toString();
     const user = await db.users.findOne({
         where : {
             verify_key : req.query.key,
             create_at : {
-                lt : Date.parse(expiredTime),
+                $lt: strExpiredTime
             }
         }
     });
