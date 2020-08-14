@@ -3,7 +3,7 @@ import moment from 'moment';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import db from '../models';
+import db, { sequelize, Sequelize } from '../models';
 import middleware from './middleware';
 
 const router = express.Router();
@@ -120,14 +120,15 @@ router.post('/login', async (req, res) => {
 
 // 이메일 인증 확인
 router.get('/confirmEmail', async (req, res) => {
-    const expiredTime = moment().add(5, "minutes").format("YYYY-MM-DD HH:mm:ss");
-    const strExpiredTime = expiredTime.toString();
     const user = await db.users.findOne({
         where : {
-            verify_key : req.query.key,
-            create_at : {
-                $lt: strExpiredTime
-            }
+            [Sequelize.Op.and] : [
+                sequelize.where(
+                    sequelize.fn('datediff', new Date(sequelize.col('create_at')).getTime() + 1000 * 60 * 5, sequelize.col('create_at')),
+                    { [Sequelize.Op.gt] : 0 }
+                ),
+                {verify_key : req.query.key}
+            ]
         }
     });
 
@@ -139,7 +140,7 @@ router.get('/confirmEmail', async (req, res) => {
         });
 
         res.render('<script type="text/javascript">alert("인증되었습니다.");');
-        return res.redirect(200, '/auth/detail');
+        return res.redirect(200, 'auth/detail');
     } 
     
     res.status(401);
