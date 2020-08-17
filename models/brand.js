@@ -13,15 +13,15 @@ module.exports = function(sequelize, DataTypes) {
 			allowNull: true
 		},
 		create_at: {
-			type: DataTypes.STRING(45),
+			type: DataTypes.DATE,
 			allowNull: true
 		},
 		update_at: {
-			type: DataTypes.STRING(45),
+			type: DataTypes.DATE,
 			allowNull: true
 		},
 		delete_at: {
-			type: DataTypes.STRING(45),
+			type: DataTypes.DATE,
 			allowNull: true
 		}
 	}, {

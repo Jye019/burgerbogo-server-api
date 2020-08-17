@@ -40,6 +40,15 @@ module.exports = function(sequelize, DataTypes) {
 		delete_at: {
 			type: DataTypes.DATE,
 			allowNull: true
+		},
+		verified: {
+			type: DataTypes.INTEGER(1),
+			allowNull: true,
+			defaultValue: 0
+		},
+		verify_key: {
+			type: DataTypes.STRING(20),
+			allowNull: true
 		}
 	}, {
 		sequelize,

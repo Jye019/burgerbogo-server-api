@@ -63,15 +63,15 @@ module.exports = function(sequelize, DataTypes) {
 			allowNull: true
 		},
 		create_at: {
-			type: DataTypes.DATEONLY,
+			type: DataTypes.DATE,
 			allowNull: true
 		},
 		update_at: {
-			type: DataTypes.DATEONLY,
+			type: DataTypes.DATE,
 			allowNull: true
 		},
 		delete_at: {
-			type: DataTypes.DATEONLY,
+			type: DataTypes.DATE,
 			allowNull: true
 		}
 	}, {
