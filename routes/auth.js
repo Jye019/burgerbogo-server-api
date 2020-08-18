@@ -40,7 +40,7 @@ router.post('/join', async (req, res) => {
             })
         } 
 
-        // 계정 생성 및 이메일 인증
+        // 계정 생성
         const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
         const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
         const verifyKey = key1 + key2; 
@@ -77,6 +77,93 @@ router.post('/join', async (req, res) => {
             message: err.stack, 
         });
     }    
+});
+
+// 이메일 인증 확인
+router.get('/confirmEmail', async (req, res) => {
+    try {
+        const user = await db.users.findOne({
+            where : {
+                [Sequelize.Op.and] : [
+                    sequelize.where(
+                        sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('create_at')),
+                        { [Sequelize.Op.lt] : 1 }
+                    ),
+                    {verify_key : req.query.key}
+                ]
+            }
+        });
+    
+        if(user) {
+            await db.users.update({verified: 1}, {
+                where: {
+                    verify_key : req.query.key,
+                }
+            });
+    
+            return res.status(200).json({
+                code: 200,
+                message: "email check success",
+            });
+        } 
+        
+        return res.status(401).json({
+            code: 401,
+            message: "expired email key",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ 
+            code: 500, 
+            message: err.stack 
+        });
+    }
+    
+})
+
+// 이메일 인증 재전송
+router.post('/reSend',  async (req, res) => {
+    try {
+        // verifyKey 변경
+        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
+        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
+        const verifyKey = key1 + key2; 
+        await db.users.update({verify_key: verifyKey}, {
+            where: {
+                email : req.body.email,
+            }
+        });
+       
+        // 이메일 발송
+        const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
+        req.body.verifyLink = verifyLink;
+        const success = await middleware.sendEmail(req, res);
+        
+        if (success) {
+            const user = await db.users.findOne({
+                where : {
+                    email: req.body.email,
+                }
+            });
+
+            return res.status(200).json({ 
+                code: 200,
+                message: success, 
+                data : user,
+            });
+        } 
+
+        return res.status(500).json({
+            code: 500,
+            message: 'send email fail',
+        })
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ 
+            code: 500, 
+            message: err.stack 
+        });
+    }
 });
 
 router.post('/login', async (req, res) => {
@@ -126,48 +213,6 @@ router.post('/login', async (req, res) => {
             message: err.stack 
         });
     }
-})
-
-// 이메일 인증 확인
-router.get('/confirmEmail', async (req, res) => {
-    try {
-        const user = await db.users.findOne({
-            where : {
-                [Sequelize.Op.and] : [
-                    sequelize.where(
-                        sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('create_at')),
-                        { [Sequelize.Op.lt] : 1 }
-                    ),
-                    {verify_key : req.query.key}
-                ]
-            }
-        });
-    
-        if(user) {
-            await db.users.update({verified: 1}, {
-                where: {
-                    verify_key : req.query.key,
-                }
-            });
-    
-            return res.status(200).json({
-                code: 200,
-                message: "email check success",
-            });
-        } 
-        
-        return res.status(401).json({
-            code: 401,
-            message: "expired email key",
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ 
-            code: 500, 
-            message: err.stack 
-        });
-    }
-    
 })
 
 // 최초 로그인 시 추가 개인정보 등록 
