@@ -225,11 +225,6 @@ router.get('/verify', middleware.verifyToken, (req, res) => {
     res.json(req.decoded);
 });
 
-// jwt 확인
-router.get('/verify', middleware.verifyToken, (req, res) => {
-    res.json(req.decoded);
-});
-
 // 로그아웃
 // 쿠키 삭제 np
 
