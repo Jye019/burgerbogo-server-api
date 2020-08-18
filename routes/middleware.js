@@ -111,11 +111,10 @@ exports.sendEmail = async (req, res) => {
             subject: email.subject,
             html: contents,
         });
-    } catch (err) {
-        console.log(err);
-        return res.status(500).json({
-            code: 401,
-            message: 'fail email transport',
-        })
+
+        return true;
+    
+    } catch (err) {  
+        return false;
     }
 }

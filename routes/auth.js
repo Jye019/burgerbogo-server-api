@@ -1,5 +1,4 @@
 import express from "express";
-import moment from 'moment';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
@@ -218,7 +217,7 @@ router.post('/login', async (req, res) => {
 
 // 최초 로그인 시 추가 개인정보 등록 
 router.get('/detail', () => {
-    console.log(`${moment().add(5, "minutes").format("YYYY-MM-DD hh:mm:ss")}`);
+    console.log(1);
 });
 
 // jwt 확인
