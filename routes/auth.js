@@ -1,5 +1,4 @@
 import express from "express";
-import moment from 'moment';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
@@ -57,9 +56,20 @@ router.post('/join', async (req, res) => {
         // 이메일 발송
         const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
         req.body.verifyLink = verifyLink;
-        middleware.sendEmail(req, res);
+        const success = await middleware.sendEmail(req, res);
         
-        return res.status(200).json(newUser);
+        if (success) {
+            return res.status(200).json({ 
+                code: 200,
+                message: success, 
+                data : newUser,
+            });
+        } 
+
+        return res.status(500).json({
+            code: 500,
+            message: 'send email fail',
+        })
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
@@ -120,36 +130,49 @@ router.post('/login', async (req, res) => {
 
 // 이메일 인증 확인
 router.get('/confirmEmail', async (req, res) => {
-    const user = await db.users.findOne({
-        where : {
-            [Sequelize.Op.and] : [
-                sequelize.where(
-                    sequelize.fn('datediff', new Date(sequelize.col('create_at')).getTime() + 1000 * 60 * 5, sequelize.col('create_at')),
-                    { [Sequelize.Op.gt] : 0 }
-                ),
-                {verify_key : req.query.key}
-            ]
-        }
-    });
-
-    if(user) {
-        await db.users.update({verified: 1}, {
-            where: {
-                verify_key : req.query.key,
+    try {
+        const user = await db.users.findOne({
+            where : {
+                [Sequelize.Op.and] : [
+                    sequelize.where(
+                        sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('create_at')),
+                        { [Sequelize.Op.lt] : 1 }
+                    ),
+                    {verify_key : req.query.key}
+                ]
             }
         });
-
-        res.render('<script type="text/javascript">alert("인증되었습니다.");');
-        return res.redirect(200, 'auth/detail');
-    } 
     
-    res.status(401);
-    return res.send('<script type="text/javascript">alert("인증을 실패하였습니다."); window.location="/"; </script>');
+        if(user) {
+            await db.users.update({verified: 1}, {
+                where: {
+                    verify_key : req.query.key,
+                }
+            });
+    
+            return res.status(200).json({
+                code: 200,
+                message: "email check success",
+            });
+        } 
+        
+        return res.status(401).json({
+            code: 401,
+            message: "expired email key",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ 
+            code: 500, 
+            message: err.stack 
+        });
+    }
+    
 })
 
 // 최초 로그인 시 추가 개인정보 등록 
 router.get('/detail', () => {
-    console.log(`${moment().add(5, "minutes").format("YYYY-MM-DD hh:mm:ss")}`);
+    console.log(1);
 });
 
 // jwt 확인
