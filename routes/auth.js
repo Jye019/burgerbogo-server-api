@@ -40,7 +40,7 @@ router.post('/join', async (req, res) => {
             })
         } 
 
-        // 계정 생성 및 이메일 인증
+        // 계정 생성
         const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
         const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
         const verifyKey = key1 + key2; 
