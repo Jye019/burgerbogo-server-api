@@ -36,7 +36,7 @@ router.post('/join', async (req, res) => {
         if(exUser) {
             return res.status(409).json({
                 code: 409,
-                message: "account exists",
+                message: "duplicated",
             })
         } 
 
@@ -217,8 +217,60 @@ router.post('/login', async (req, res) => {
 })
 
 // 최초 로그인 시 추가 개인정보 등록 
-router.get('/detail', () => {
-    console.log(1);
+router.post('/detail', async(req, res) => {
+    try {
+        // 닉네임 validation 체크
+        const nicknameRegExp = /^[ㄱ-ㅎ가-힣a-zA-Z]{1,10}$/;
+        if(!nicknameRegExp.test(req.body.nickname)) {
+            return res.status(409).json({
+                code: 409, 
+                message: "invalid nickname",
+            });
+        }
+        
+        // 닉네임 중복 체크
+        const user = await db.users.findOne({
+            where: {
+                [Sequelize.Op.and] : [
+                    {nickname: req.body.nickname},
+                    {   
+                        email: {
+                            [Sequelize.Op.ne]: req.body.email
+                        }
+                    }
+                ]
+            }
+        })
+
+        if(user) {
+            return res.status(409).json({
+                code: 409,
+                message: 'duplicated'
+            })
+        }
+
+        // 추가 정보 update
+        await db.users.update({
+            nickname: req.body.nickname,
+            gender: req.body.gender || null,
+            birth_year: req.body.birth_year || null,
+        }, {
+            where: {
+                email: req.body.email,
+            }
+        })
+
+        return res.status(200).json({
+            code: 200,
+            message: "update info",
+        })
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ 
+            code: 500, 
+            message: err.stack 
+        });
+    }
 });
 
 // jwt 확인
