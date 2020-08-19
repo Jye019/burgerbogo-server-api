@@ -43,7 +43,7 @@ router.post('/join', async (req, res) => {
         // 계정 생성
         const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
         const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
-        const verifyKey = key1 + key2; 
+        const verifyKey = encodeURIComponent(key1 + key2); 
 
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
@@ -82,6 +82,7 @@ router.post('/join', async (req, res) => {
 // 이메일 인증 확인
 router.get('/confirmEmail', async (req, res) => {
     try {
+        const key = encodeURIComponent(req.query.key);
         const user = await db.users.findOne({
             where : {
                 [Sequelize.Op.and] : [
@@ -89,7 +90,7 @@ router.get('/confirmEmail', async (req, res) => {
                         sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('create_at')),
                         { [Sequelize.Op.lt] : 1 }
                     ),
-                    {verify_key : encodeURIComponent(req.query.key)}
+                    {verify_key : key}
                 ]
             }
         });
@@ -97,7 +98,7 @@ router.get('/confirmEmail', async (req, res) => {
         if(user) {
             await db.users.update({verified: 1}, {
                 where: {
-                    verify_key : req.query.key,
+                    verify_key : key,
                 }
             });
     
@@ -127,9 +128,7 @@ router.post('/reSend',  async (req, res) => {
         // verifyKey 변경
         const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
         const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
-        console.log(`${key1} ///// ${key2}`)
         const verifyKey = encodeURIComponent(key1 + key2); 
-        console.log(verifyKey)
         await db.users.update({verify_key: verifyKey}, {
             where: {
                 email : req.body.email,
