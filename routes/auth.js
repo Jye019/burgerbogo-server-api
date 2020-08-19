@@ -89,7 +89,7 @@ router.get('/confirmEmail', async (req, res) => {
                         sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('create_at')),
                         { [Sequelize.Op.lt] : 1 }
                     ),
-                    {verify_key : req.query.key}
+                    {verify_key : encodeURIComponent(req.query.key)}
                 ]
             }
         });
@@ -127,7 +127,9 @@ router.post('/reSend',  async (req, res) => {
         // verifyKey 변경
         const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
         const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
-        const verifyKey = key1 + key2; 
+        console.log(`${key1} ///// ${key2}`)
+        const verifyKey = encodeURIComponent(key1 + key2); 
+        console.log(verifyKey)
         await db.users.update({verify_key: verifyKey}, {
             where: {
                 email : req.body.email,
