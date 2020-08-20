@@ -9,7 +9,11 @@
       "dateStrings": true,
       "typeCast": true
     },
-    "timezone": "+09:00"
+    "timezone": "+09:00",
+    "additional": {
+      "timestamps": true,
+      "paranoid": true
+    }
   },
   "production": {
     "username": "root",
