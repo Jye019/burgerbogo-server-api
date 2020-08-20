@@ -43,7 +43,15 @@ db.generate = () => {
     config.database,
     config.username,
     config.password,
-    config
+    {
+      host: config.host,
+      port: "3306",
+      dialect: config.dialect,
+      additional: {
+        timestamps: true,
+        paranoid: true,
+      },
+    }
   );
   auto.run((err) => {
     if (err) throw err;

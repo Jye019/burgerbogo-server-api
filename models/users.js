@@ -12,13 +12,14 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING(80),
 			allowNull: true
 		},
-		age: {
-			type: DataTypes.INTEGER.UNSIGNED,
+		birth_year: {
+			type: 'YEAR',
 			allowNull: true
 		},
 		is_admin: {
 			type: DataTypes.INTEGER(1),
-			allowNull: true
+			allowNull: true,
+			defaultValue: 0
 		},
 		nickname: {
 			type: DataTypes.STRING(20),
@@ -28,10 +29,9 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING(30),
 			allowNull: false
 		},
-		create_at: {
+		createAt: {
 			type: DataTypes.DATE,
-			allowNull: false,
-			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+			allowNull: true
 		},
 		update_at: {
 			type: DataTypes.DATE,
@@ -49,10 +49,15 @@ module.exports = function(sequelize, DataTypes) {
 		verify_key: {
 			type: DataTypes.STRING(20),
 			allowNull: true
+		},
+		gender: {
+			type: DataTypes.INTEGER(1),
+			allowNull: true
 		}
 	}, {
 		sequelize,
 		tableName: 'users',
-		timestamps: false
+		timestamps: true,
+		paranoid: true
 	});
 };

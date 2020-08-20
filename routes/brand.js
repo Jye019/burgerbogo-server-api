@@ -9,9 +9,9 @@ router.use(express.urlencoded({ extended: false }));
 router.post("/", async (req, res) => {
   try {
     await brand.create(req.body);
-    res.status(200).json({ message: "브랜드 작성 성공" });
+    res.status(200).json({ message: "브랜드 추가 성공" });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생" });
+    res.status(500).json({ message: "오류 발생", error: err.stack });
   }
 });
 
@@ -58,21 +58,131 @@ export default router;
 
 /**
  * @swagger
- * definitions:
- *  newBrand:
- *   type: object
- *   required:
- *     - name
- *   properties:
- *     name:
- *       type: string
- *       description: 브랜드 이름
+ *  /brand:
+ *    post:
+ *      tags:
+ *      - brand
+ *      description: 브랜드를 추가한다.
+ *      produces:
+ *      - applicaion/json
+ *      parameters:
+ *      - name: name
+ *        in: body
+ *        description: "브랜드 이름"
+ *        required: true
+ *        type: string
+ *      responses:
+ *       '200':
+ *        description: 브랜드 추가 성공
+ *        schema:
+ *          type: object
+ *          properties:
+ *              message:
+ *                  type: string
+ *                  example: 브랜드 추가 성공
+ *       '500':
+ *        description: 오류 발생
+ *        schema:
+ *          type: object
+ *          properties:
+ *              message:
+ *                  type: string
+ *                  example: 오류 발생
+ *              error:
+ *                  type: string
+ *                  example: 에러 내용
  */
 
 /**
  * @swagger
- *  /brand/add:
- *    post:
+ *  /brand:
+ *    get:
+ *      tags:
+ *      - brand
+ *      description: 전체 브랜드 조회
+ *      produces:
+ *      - applicaion/json
+ *      responses:
+ *       '200':
+ *        description: 전체 브랜드 조회 성공
+ *        schema:
+ *            type: object
+ *            properties:
+ *                message:
+ *                    type: string
+ *                    example: 브랜드 전체읽기 성공
+ *                data:
+ *                    type: array
+ *                    items:
+ *                        type: object
+ *                    example:
+ *                        - id: 1
+ *                          name: 맥도날드
+ *                          createdAt: 2020-08-20T12:29:43.000Z
+ *                          updatedAt: 2020-08-20T12:29:43.000Z
+ *                          deletedAt:
+ *                        - id: 2
+ *                          name: 버거킹
+ *                          createdAt: 2020-08-20T14:03:51.000Z
+ *                          updatedAt: 2020-08-20T14:03:51.000Z
+ *                          deletedAt:
+ */
+
+/**
+ * @swagger
+ *  /brand/{id}:
+ *    get:
+ *      tags:
+ *      - brand
+ *      description: 브랜드 조회
+ *      produces:
+ *      - applicaion/json
+ *      parameters:
+ *      - name: id
+ *        in: body
+ *        description: "브랜드 id"
+ *        required: true
+ *        type: boolean
+ *      responses:
+ *       '200':
+ *        description: 브랜드 조회
+ *        schema:
+ *          properties:
+ *              type: object
+ *              message:
+ *                  type: string
+ *                  example: 브랜드 읽기 성공
+ *              data:
+ *                  type: object
+ *
+ */
+
+/**
+ * @swagger
+ *  /brand:
+ *    put:
+ *      tags:
+ *      - brand
+ *      description: 브랜드를 추가한다.
+ *      produces:
+ *      - applicaion/json
+ *      parameters:
+ *      - name: name
+ *        in: body
+ *        description: "브랜드 이름"
+ *        required: true
+ *        type: string
+ *      responses:
+ *       '200':
+ *        description: 브랜드 추가 성공
+ *        schema:
+ *          $ref: '#/definitions/newBrand'
+ */
+
+/**
+ * @swagger
+ *  /brand:
+ *    delete:
  *      tags:
  *      - brand
  *      description: 브랜드를 추가한다.

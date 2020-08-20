@@ -62,21 +62,22 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.INTEGER,
 			allowNull: true
 		},
-		create_at: {
+		createdAt: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		update_at: {
+		updatedAt: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		delete_at: {
+		deletedAt: {
 			type: DataTypes.DATE,
 			allowNull: true
 		}
 	}, {
 		sequelize,
 		tableName: 'burger',
-		timestamps: false
+		timestamps: true,
+		paranoid: true
 	});
 };

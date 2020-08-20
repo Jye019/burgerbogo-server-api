@@ -8,10 +8,10 @@ router.use(express.urlencoded({ extended: false }));
 
 router.post("/", async (req, res) => {
   try {
-    await burger.create(req.body);
+    await burger.create({ ...req.body, create_at: new Date() });
     res.status(200).json({ message: "버거상세 작성 성공" });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생" });
+    res.status(500).json({ message: "오류 발생", error: err.stack });
   }
 });
 

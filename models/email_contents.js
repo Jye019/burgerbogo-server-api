@@ -32,6 +32,7 @@ module.exports = function(sequelize, DataTypes) {
 	}, {
 		sequelize,
 		tableName: 'email_contents',
-		timestamps: false
+		timestamps: true,
+		paranoid: true
 	});
 };
