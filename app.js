@@ -13,7 +13,7 @@ const env = process.env.NODE_ENV || "development";
 models.preventDisconnection(env);
 
 // DB 변경 시에만 실행
-// models.generate();
+models.generate();
 
 const app = express();
 app.use(swaggerDoc);
@@ -25,12 +25,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/auth", auth);
 app.use("/burger", burger);
 app.use("/brand", brand);
-<<<<<<< HEAD
+app.use("/review", review);
+
 // env 설정
 dotenv.config();
-=======
-app.use("/review", review);
->>>>>>> e0e22dc... Ing: 리뷰 CRUD까지
 
 app.get("/", async (req, res, next) => {
   const userModel = models.users;
