@@ -1,7 +1,4 @@
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
-import handlebars from 'handlebars';
-import db from '../models';
 
 // 로그인 상태인지 확인
 exports.isLoggedIn = (req, res, next) => {
@@ -40,43 +37,5 @@ exports.verifyToken = (req, res, next) => {
             code: 401,
             message: 'invalid token',
         })
-    }
-}
-
-// 이메일 발송 
-exports.sendEmail = async (req) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            auth: {
-                user: process.env.NSM_EMAIL,
-                pass: process.env.NSM_EMAIL_PW,
-            }
-        });
-
-        const email = await db.email_contents.findOne({
-            attributes: ['id', 'subject', 'contents'],
-            where : {
-                id : req.body.emailId,
-            }
-        })
-
-        const template = handlebars.compile(email.contents);
-        let contents = template();
-        if(email.id===1) {
-            contents = template({verifyLink: req.body.verifyLink});
-        }
-
-        await transporter.sendMail({
-            from: `버거보고 <${process.env.NSM_EMAIL}>`,
-            to: req.body.email,
-            subject: email.subject,
-            html: contents,
-        });
-
-        return true;
-    
-    } catch (err) {  
-        return false;
     }
 }

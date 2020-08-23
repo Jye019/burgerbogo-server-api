@@ -2,10 +2,71 @@ import express from "express";
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
+import handlebars from 'handlebars';
 import db, { sequelize, Sequelize } from '../models';
 import middleware from './middleware';
 
 const router = express.Router();
+
+// 비밀번호 validation 
+const passwordValidation = (req) => {
+    const pwdRegExp = /^.*(?=.{8,20})(?=.*[0-9])(?=.*[a-zA-Z]).*$/;
+    if (!pwdRegExp.test(req.body.password)) {
+        return false;
+    }
+    
+    return true;
+}
+
+// 이메일 발송 
+const sendEmail = async (req) => {
+    try {
+        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
+        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
+        const verifyKey = encodeURIComponent(key1 + key2); 
+        const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
+       
+        await db.users.update({verify_key: verifyKey}, {
+            where: {
+                email : req.body.email,
+            }
+        });
+
+        const email = await db.email_contents.findOne({
+            attributes: ['id', 'subject', 'contents'],
+            where : {
+                id : req.body.emailId,
+            }
+        })
+        
+        const template = handlebars.compile(email.contents);
+        let contents = template();
+        if(email.id===1) {
+            contents = template({verifyLink});
+        }
+        
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            auth: {
+                user: process.env.NSM_EMAIL,
+                pass: process.env.NSM_EMAIL_PW,
+            }
+        });
+        
+        transporter.sendMail({
+            from: `버거보고 <${process.env.NSM_EMAIL}>`,
+            to: req.body.email,
+            subject: email.subject,
+            html: contents,
+        });
+           
+        return true;
+    } catch (err) {  
+        return false;
+    }
+}
+
 
 router.post('/join', async (req, res) => {
     try {
@@ -19,13 +80,13 @@ router.post('/join', async (req, res) => {
         }
 
         // 비밀번호 validation 체크
-        const pwdRegExp = /^.*(?=.{8,20})(?=.*[0-9])(?=.*[a-zA-Z]).*$/;
-        if (!pwdRegExp.test(req.body.password)) {
+        const success = await passwordValidation(req);
+        if(!success) {
             return res.status(409).json({
-                code: 409, 
+                code: 409,
                 message: "invalid password",
-            });
-        } 
+            })
+        }
            
         // 계정 유무 확인
         const exUser = await db.users.findOne({
@@ -41,35 +102,26 @@ router.post('/join', async (req, res) => {
         } 
 
         // 계정 생성
-        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
-        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
-        const verifyKey = encodeURIComponent(key1 + key2); 
-
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-        const newUser = await db.users.create({
+        await db.users.create({
             email: req.body.email,
             password: hashedPassword, 
-            verify_key : verifyKey,
-        })
-      
-        // 이메일 발송
-        const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
-        req.body.verifyLink = verifyLink;
-        const success = await middleware.sendEmail(req, res);
-        
-        if (success) {
-            return res.status(200).json({ 
-                code: 200,
-                message: success, 
-                data : newUser,
-            });
-        } 
+        });
 
-        return res.status(500).json({
-            code: 500,
-            message: 'send email fail',
+        // 이메일 전송
+        const result = await sendEmail(req);
+        if(result) {
+            return res.status(200).json({
+                code: 200,
+                message: "email send success"
+            })
+        }
+        return res.status(409).json({
+            code: 409,
+            message: "email send fail"
         })
+       
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
@@ -87,7 +139,7 @@ router.get('/confirmEmail', async (req, res) => {
             where : {
                 [Sequelize.Op.and] : [
                     sequelize.where(
-                        sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('create_at')),
+                        sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('createdAt')),
                         { [Sequelize.Op.lt] : 1 }
                     ),
                     {verify_key : key}
@@ -125,23 +177,10 @@ router.get('/confirmEmail', async (req, res) => {
 // 이메일 인증 재전송
 router.post('/reSend',  async (req, res) => {
     try {
-        // verifyKey 변경
-        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
-        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
-        const verifyKey = encodeURIComponent(key1 + key2); 
-        await db.users.update({verify_key: verifyKey}, {
-            where: {
-                email : req.body.email,
-            }
-        });
-       
-        // 이메일 발송
-        const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
-        req.body.verifyLink = verifyLink;
-        const success = await middleware.sendEmail(req, res);
-        
+        const success = sendEmail(req, res);
         if (success) {
             const user = await db.users.findOne({
+                attributes: { exclude: ['password'] },
                 where : {
                     email: req.body.email,
                 }
@@ -273,15 +312,42 @@ router.post('/detail', async(req, res) => {
     }
 });
 
+// 비밀번호 재설정
+router.post('/reset-pw', async(req, res) => {
+    try {
+        const success = passwordValidation(req);
+        if(!success) {
+            return res.status(409).json({
+                code: 409,
+                message: "invalid password",
+            })
+        }
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+        await db.users.update({password: hashedPassword}, {
+            where : {
+                email: req.body.email
+            }
+        })
+
+        return res.status(200).json({
+            code: 200,
+            message: "password update success"
+        })
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ 
+            code: 500, 
+            message: err.stack 
+        });
+    }
+});
+
+
 // jwt 확인
 router.get('/verify', middleware.verifyToken, (req, res) => {
     res.json(req.decoded);
 });
-
-// 로그아웃
-// 쿠키 삭제 np
-
-// 이메일 전송 
-
 
 export default router;
