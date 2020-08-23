@@ -1,65 +1,55 @@
 /* jshint indent: 1 */
 
 module.exports = function(sequelize, DataTypes) {
-	return sequelize.define('burger', {
+	return sequelize.define('review', {
 		id: {
 			autoIncrement: true,
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			primaryKey: true
 		},
-		brand_id: {
+		users_id: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			references: {
 				model: {
-					tableName: 'brand',
+					tableName: 'users',
 				},
 				key: 'id'
 			}
 		},
-		name: {
-			type: DataTypes.STRING(45),
-			allowNull: true
-		},
-		price_single: {
+		burger_id: {
 			type: DataTypes.INTEGER,
+			allowNull: false,
+			references: {
+				model: {
+					tableName: 'burger',
+				},
+				key: 'id'
+			}
+		},
+		content: {
+			type: DataTypes.TEXT,
 			allowNull: true
 		},
-		price_set: {
-			type: DataTypes.INTEGER,
+		score: {
+			type: DataTypes.FLOAT,
 			allowNull: true
 		},
-		calorie: {
-			type: DataTypes.INTEGER,
+		sweet: {
+			type: DataTypes.FLOAT,
 			allowNull: true
 		},
-		image: {
-			type: DataTypes.STRING(200),
+		sour: {
+			type: DataTypes.FLOAT,
 			allowNull: true
 		},
-		releasedAt: {
-			type: DataTypes.DATEONLY,
+		salty: {
+			type: DataTypes.FLOAT,
 			allowNull: true
 		},
-		weight: {
-			type: DataTypes.INTEGER,
-			allowNull: true
-		},
-		protein: {
-			type: DataTypes.INTEGER,
-			allowNull: true
-		},
-		natrium: {
-			type: DataTypes.INTEGER,
-			allowNull: true
-		},
-		sugar: {
-			type: DataTypes.INTEGER,
-			allowNull: true
-		},
-		saturated_fat: {
-			type: DataTypes.INTEGER,
+		spicy: {
+			type: DataTypes.FLOAT,
 			allowNull: true
 		},
 		createdAt: {
@@ -76,7 +66,7 @@ module.exports = function(sequelize, DataTypes) {
 		}
 	}, {
 		sequelize,
-		tableName: 'burger',
+		tableName: 'review',
 		timestamps: true,
 		paranoid: true
 	});

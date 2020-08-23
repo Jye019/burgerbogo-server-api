@@ -27,7 +27,11 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const result = await burger.findOne({ where: { id: req.params.id } });
-    res.status(200).json({ message: "버거상세 읽기 성공", data: result });
+    if (result) {
+      res.status(200).json({ message: "버거상세 읽기 성공", data: result });
+    } else {
+      res.status(502).json({ message: "존재하지 않는 버거상세" });
+    }
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }
@@ -38,7 +42,7 @@ router.put("/", async (req, res) => {
     if (await burger.findOne({ where: { id: req.body.id } })) {
       await burger.update(req.body.data, { where: { id: req.body.id } });
       res.status(200).json({ message: "버거상세 수정 성공" });
-    } else res.status(200).json({ message: "존재하지 않는 버거상세" });
+    } else res.status(502).json({ message: "존재하지 않는 버거상세" });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }
@@ -48,7 +52,7 @@ router.delete("/", async (req, res) => {
   try {
     const result = await burger.destroy({ where: { id: req.body.id } });
     if (result === 1) res.status(200).json({ message: "버거상세 삭제 성공" });
-    else res.status(200).json({ message: "존재하지 않는 버거상세" });
+    else res.status(502).json({ message: "존재하지 않는 버거상세" });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }

@@ -4,6 +4,7 @@ import swaggerDoc from "./swaggerDoc";
 import auth from "./routes/auth";
 import burger from "./routes/burger";
 import brand from "./routes/brand";
+import review from "./routes/review";
 import models from "./models";
 
 const env = process.env.NODE_ENV || "development";
@@ -21,13 +22,15 @@ app.use(swaggerDoc);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.use("/auth", auth);
 app.use("/burger", burger);
 app.use("/brand", brand);
+<<<<<<< HEAD
 // env 설정
 dotenv.config();
+=======
+app.use("/review", review);
+>>>>>>> e0e22dc... Ing: 리뷰 CRUD까지
 
 app.get("/", async (req, res, next) => {
   const userModel = models.users;

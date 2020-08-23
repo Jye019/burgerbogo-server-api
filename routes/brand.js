@@ -27,7 +27,11 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const result = await brand.findOne({ where: { id: req.params.id } });
-    res.status(200).json({ message: "브랜드 읽기 성공", data: result });
+    if (result) {
+      res.status(200).json({ message: "브랜드 읽기 성공", data: result });
+    } else {
+      res.status(502).json({ message: "존재하지 않는 브랜드" });
+    }
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }
@@ -38,7 +42,7 @@ router.put("/", async (req, res) => {
     if (await brand.findOne({ where: { id: req.body.id } })) {
       await brand.update(req.body.data, { where: { id: req.body.id } });
       res.status(200).json({ message: "브랜드 수정 성공" });
-    } else res.status(200).json({ message: "존재하지 않는 브랜드" });
+    } else res.status(502).json({ message: "존재하지 않는 브랜드" });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }
@@ -48,7 +52,7 @@ router.delete("/", async (req, res) => {
   try {
     const result = await brand.destroy({ where: { id: req.body.id } });
     if (result === 1) res.status(200).json({ message: "브랜드 삭제 성공" });
-    else res.status(200).json({ message: "존재하지 않는 브랜드" });
+    else res.status(502).json({ message: "존재하지 않는 브랜드" });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }
@@ -147,13 +151,29 @@ export default router;
  *       '200':
  *        description: 브랜드 조회
  *        schema:
+ *          type: object
  *          properties:
- *              type: object
  *              message:
  *                  type: string
  *                  example: 브랜드 읽기 성공
  *              data:
  *                  type: object
+ *                  properties:
+ *                      id:
+ *                          type: number
+ *                          example: 1
+ *                      name:
+ *                          type: string
+ *                          example: 버거킹
+ *                      createdAt:
+ *                          type: string
+ *                          example: 2020-08-23T07:18:10.000Z
+ *                      updatedAt:
+ *                          type: string
+ *                          example: 2020-08-23T07:18:10.000Z
+ *                      deletedAt:
+ *                          type: string
+ *                          example:
  *
  */
 
@@ -185,18 +205,28 @@ export default router;
  *    delete:
  *      tags:
  *      - brand
- *      description: 브랜드를 추가한다.
+ *      description: 브랜드를 삭제한다.
  *      produces:
  *      - applicaion/json
  *      parameters:
- *      - name: name
- *        in: body
- *        description: "브랜드 이름"
- *        required: true
- *        type: string
+ *      - in: body
+ *        name: brandID
+ *        description: "브랜드 ID"
+ *        schema:
+ *            type: object
+ *            required:
+ *                - id
+ *            properties:
+ *                id:
+ *                    type: number
+ *                    example: 1
  *      responses:
  *       '200':
- *        description: 브랜드 추가 성공
+ *        description: 브랜드 삭제 성공
  *        schema:
- *          $ref: '#/definitions/newBrand'
+ *          type: object
+ *          properties:
+ *              message:
+ *                  type: string
+ *                  example: 브랜드 삭제 성공
  */

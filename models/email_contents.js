@@ -12,16 +12,15 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.TEXT,
 			allowNull: false
 		},
-		create_at: {
-			type: DataTypes.DATE,
-			allowNull: false,
-			defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-		},
-		update_at: {
+		createdAt: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		delete_at: {
+		updatedAt: {
+			type: DataTypes.DATE,
+			allowNull: true
+		},
+		deletedAt: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
