@@ -13,7 +13,7 @@ const env = process.env.NODE_ENV || "development";
 models.preventDisconnection(env);
 
 // DB 변경 시에만 실행
-models.generate();
+// models.generate();
 
 const app = express();
 app.use(swaggerDoc);
