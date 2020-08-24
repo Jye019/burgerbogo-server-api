@@ -80,7 +80,7 @@ router.post('/join', async (req, res) => {
         }
 
         // 비밀번호 validation 체크
-        const success = await passwordValidation(req);
+        const success = passwordValidation(req);
         if(!success) {
             return res.status(409).json({
                 code: 409,
@@ -135,7 +135,7 @@ router.post('/join', async (req, res) => {
 router.get('/confirmEmail', async (req, res) => {
     try {
         const key = encodeURIComponent(req.query.key);
-        const user = await db.users.findOne({
+        const userInfo = await db.users.findOne({
             where : {
                 [Sequelize.Op.and] : [
                     sequelize.where(
@@ -147,16 +147,18 @@ router.get('/confirmEmail', async (req, res) => {
             }
         });
     
-        if(user) {
+        if(userInfo) {
+            userInfo.verified = 1;
             await db.users.update({verified: 1}, {
                 where: {
                     verify_key : key,
                 }
             });
-    
+            
             return res.status(200).json({
                 code: 200,
                 message: "email check success",
+                data: {"userData": {...userInfo.dataValues}}
             });
         } 
         
