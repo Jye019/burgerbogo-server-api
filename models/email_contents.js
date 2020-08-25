@@ -12,15 +12,15 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.TEXT,
 			allowNull: false
 		},
-		createdAt: {
+		created_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		updatedAt: {
+		updated_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		deletedAt: {
+		deleted_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
@@ -32,6 +32,7 @@ module.exports = function(sequelize, DataTypes) {
 		sequelize,
 		tableName: 'email_contents',
 		timestamps: true,
-		paranoid: true
+		paranoid: true,
+		underscored: true
 	});
 };

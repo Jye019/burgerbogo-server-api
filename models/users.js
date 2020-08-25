@@ -29,15 +29,15 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING(30),
 			allowNull: false
 		},
-		createdAt: {
+		created_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		updatedAt: {
+		updated_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		deletedAt: {
+		deleted_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
@@ -58,6 +58,7 @@ module.exports = function(sequelize, DataTypes) {
 		sequelize,
 		tableName: 'users',
 		timestamps: true,
-		paranoid: true
+		paranoid: true,
+		underscored: true
 	});
 };

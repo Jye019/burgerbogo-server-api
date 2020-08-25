@@ -1,6 +1,5 @@
 import express from "express";
 import dotenv from "dotenv";
-import swaggerDoc from "./swaggerDoc";
 import auth from "./routes/auth";
 import burger from "./routes/burger";
 import brand from "./routes/brand";
@@ -13,10 +12,9 @@ const env = process.env.NODE_ENV || "development";
 models.preventDisconnection(env);
 
 // DB 변경 시에만 실행
-// models.generate();
+models.generate();
 
 const app = express();
-app.use(swaggerDoc);
 
 // 바디 파싱 미들웨어
 app.use(express.json());

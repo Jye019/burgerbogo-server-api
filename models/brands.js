@@ -1,7 +1,7 @@
 /* jshint indent: 1 */
 
 module.exports = function(sequelize, DataTypes) {
-	return sequelize.define('brand', {
+	return sequelize.define('brands', {
 		id: {
 			autoIncrement: true,
 			type: DataTypes.INTEGER,
@@ -12,22 +12,23 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING(45),
 			allowNull: true
 		},
-		createdAt: {
+		created_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		updatedAt: {
+		updated_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		deletedAt: {
+		deleted_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		}
 	}, {
 		sequelize,
-		tableName: 'brand',
+		tableName: 'brands',
 		timestamps: true,
-		paranoid: true
+		paranoid: true,
+		underscored: true
 	});
 };

@@ -1,7 +1,7 @@
 /* jshint indent: 1 */
 
 module.exports = function(sequelize, DataTypes) {
-	return sequelize.define('review', {
+	return sequelize.define('reviews', {
 		id: {
 			autoIncrement: true,
 			type: DataTypes.INTEGER,
@@ -18,12 +18,12 @@ module.exports = function(sequelize, DataTypes) {
 				key: 'id'
 			}
 		},
-		burger_id: {
+		burgers_id: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			references: {
 				model: {
-					tableName: 'burger',
+					tableName: 'burgers',
 				},
 				key: 'id'
 			}
@@ -52,22 +52,23 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.FLOAT,
 			allowNull: true
 		},
-		createdAt: {
+		created_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		updatedAt: {
+		updated_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		},
-		deletedAt: {
+		deleted_at: {
 			type: DataTypes.DATE,
 			allowNull: true
 		}
 	}, {
 		sequelize,
-		tableName: 'review',
+		tableName: 'reviews',
 		timestamps: true,
-		paranoid: true
+		paranoid: true,
+		underscored: true
 	});
 };
