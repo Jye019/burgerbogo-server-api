@@ -2,7 +2,7 @@
 
 module.exports = function (sequelize, DataTypes) {
   const ingredients = sequelize.define(
-    "ingredients",
+    "Ingredients",
     {
       id: {
         autoIncrement: true,
@@ -28,7 +28,7 @@ module.exports = function (sequelize, DataTypes) {
     }
   );
   ingredients.associate = (models) => {
-    ingredients.hasMany(models.burgers_have_ingredients);
+    ingredients.hasMany(models.BIngredients);
   };
   return ingredients;
 };

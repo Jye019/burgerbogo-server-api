@@ -2,7 +2,7 @@
 
 module.exports = function (sequelize, DataTypes) {
   const reviews = sequelize.define(
-    "reviews",
+    "Reviews",
     {
       id: {
         autoIncrement: true,
@@ -56,7 +56,7 @@ module.exports = function (sequelize, DataTypes) {
     reviews.belongsTo(models.users, {
       foreignKey: "user_id",
     });
-    reviews.belongsTo(models.burgers, {
+    reviews.belongsTo(models.Burgers, {
       foreignKey: "burger_id",
     });
   };

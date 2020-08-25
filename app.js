@@ -5,14 +5,10 @@ import burger from "./routes/burger";
 import brand from "./routes/brand";
 import review from "./routes/review";
 import models from "./models";
+import db from "./library/db";
 
-const env = process.env.NODE_ENV || "development";
-
-// MySQL Timeout 현상 방지
-models.preventDisconnection(env);
-
-// DB 변경 시에만 실행
-// models.generate();
+// 테이블이 존재하지 않으면 테이블 생성
+db.syncronize(models);
 
 const app = express();
 

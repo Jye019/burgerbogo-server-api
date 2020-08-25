@@ -1,5 +1,5 @@
 import express from "express";
-import { burgers, brands, reviews } from "../models";
+import { Burgers, Brands, Reviews } from "../models";
 
 const router = express.Router();
 
@@ -9,11 +9,11 @@ router.use(express.urlencoded({ extended: false }));
 router.post("/", async (req, res) => {
   try {
     if (
-      await brands.findOne({
+      await Brands.findOne({
         where: { id: req.body.brand_id },
       })
     ) {
-      await burgers.create(req.body);
+      await Burgers.create(req.body);
       res.status(200).json({ message: "버거 작성 성공" });
     } else {
       res.status(502).json({ message: "존재하지 않는 브랜드" });
@@ -25,8 +25,8 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const result = await burgers.findAll({
-      include: [{ model: brands, attributes: ["name"] }],
+    const result = await Burgers.findAll({
+      include: [{ model: Brands, attributes: ["name"] }],
     });
     res.status(200).json({ message: "전체 버거 조회 성공", data: result });
   } catch (err) {
@@ -36,8 +36,8 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const result = await burgers.findOne({
-      include: [{ model: brands, attributes: ["name"] }, { model: reviews }],
+    const result = await Burgers.findOne({
+      include: [{ model: Brands, attributes: ["name"] }, { model: Reviews }],
       where: { id: req.params.id },
     });
     if (result) {
@@ -52,8 +52,8 @@ router.get("/:id", async (req, res) => {
 
 router.put("/", async (req, res) => {
   try {
-    if (await burgers.findOne({ where: { id: req.body.id } })) {
-      await burgers.update(req.body.data, { where: { id: req.body.id } });
+    if (await Burgers.findOne({ where: { id: req.body.id } })) {
+      await Burgers.update(req.body.data, { where: { id: req.body.id } });
       res.status(200).json({ message: "버거 수정 성공" });
     } else res.status(502).json({ message: "존재하지 않는 버거" });
   } catch (err) {
@@ -63,8 +63,8 @@ router.put("/", async (req, res) => {
 
 router.delete("/", async (req, res) => {
   try {
-    if (await burgers.findOne({ where: { id: req.body.id } })) {
-      await burgers.destroy({ where: { id: req.body.id } });
+    if (await Burgers.findOne({ where: { id: req.body.id } })) {
+      await Burgers.destroy({ where: { id: req.body.id } });
       res.status(200).json({ message: "버거 삭제 성공" });
     } else res.status(502).json({ message: "존재하지 않는 버거" });
   } catch (err) {

@@ -54,7 +54,7 @@ module.exports = function (sequelize, DataTypes) {
     }
   );
   users.associate = (models) => {
-    users.hasMany(models.reviews);
+    users.hasMany(models.Reviews);
   };
   return users;
 };

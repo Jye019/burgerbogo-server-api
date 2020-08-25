@@ -2,7 +2,7 @@
 
 module.exports = function (sequelize, DataTypes) {
   const burgers_have_ingredients = sequelize.define(
-    "burgers_have_ingredients",
+    "BIngredients",
     {
       id: {
         autoIncrement: true,
@@ -28,10 +28,10 @@ module.exports = function (sequelize, DataTypes) {
     }
   );
   burgers_have_ingredients.associate = (models) => {
-    burgers_have_ingredients.belongsTo(models.burgers, {
+    burgers_have_ingredients.belongsTo(models.Burgers, {
       foreignKey: "burger_id",
     });
-    burgers_have_ingredients.belongsTo(models.ingredients, {
+    burgers_have_ingredients.belongsTo(models.Ingredients, {
       foreignKey: "ingredient_id",
     });
   };
