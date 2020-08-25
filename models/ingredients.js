@@ -1,8 +1,8 @@
 /* jshint indent: 1 */
 
 module.exports = function (sequelize, DataTypes) {
-  const brands = sequelize.define(
-    "brands",
+  const ingredients = sequelize.define(
+    "ingredients",
     {
       id: {
         autoIncrement: true,
@@ -14,17 +14,21 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING(45),
         allowNull: true,
       },
+      type: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
     {
       sequelize,
-      tableName: "brands",
+      tableName: "ingredients",
       timestamps: true,
       paranoid: true,
       underscored: true,
     }
   );
-  brands.associate = (models) => {
-    brands.hasMany(models.burgers);
+  ingredients.associate = (models) => {
+    ingredients.hasMany(models.burgers_have_ingredients);
   };
-  return brands;
+  return ingredients;
 };

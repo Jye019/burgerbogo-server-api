@@ -1,5 +1,5 @@
 import express from "express";
-import { burgers, brands } from "../models";
+import { burgers, brands, reviews } from "../models";
 
 const router = express.Router();
 
@@ -8,7 +8,11 @@ router.use(express.urlencoded({ extended: false }));
 
 router.post("/", async (req, res) => {
   try {
-    if (await brands.findOne({ where: { id: req.body.brands_id } })) {
+    if (
+      await brands.findOne({
+        where: { id: req.body.brand_id },
+      })
+    ) {
       await burgers.create(req.body);
       res.status(200).json({ message: "버거 작성 성공" });
     } else {
@@ -21,7 +25,9 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const result = await burgers.findAll();
+    const result = await burgers.findAll({
+      include: [{ model: brands, attributes: ["name"] }],
+    });
     res.status(200).json({ message: "전체 버거 조회 성공", data: result });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
@@ -30,7 +36,10 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const result = await burgers.findOne({ where: { id: req.params.id } });
+    const result = await burgers.findOne({
+      include: [{ model: brands, attributes: ["name"] }, { model: reviews }],
+      where: { id: req.params.id },
+    });
     if (result) {
       res.status(200).json({ message: "버거 조회 성공", data: result });
     } else {
