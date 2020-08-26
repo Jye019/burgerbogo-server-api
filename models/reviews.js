@@ -1,8 +1,9 @@
 /* jshint indent: 1 */
+import { users, Burger } from "./index";
 
 module.exports = function (sequelize, DataTypes) {
   const reviews = sequelize.define(
-    "Reviews",
+    "Review",
     {
       id: {
         autoIncrement: true,
@@ -49,6 +50,20 @@ module.exports = function (sequelize, DataTypes) {
       timestamps: true,
       paranoid: true,
       underscored: true,
+      defaultScope: {
+        attributes: {
+          exclude: [
+            "user_id",
+            "burger_id",
+            "userId",
+            "BurgerId",
+            "createdAt",
+            "updatedAt",
+            "deletedAt",
+          ],
+        },
+      },
+      scopes: {},
     }
   );
 
@@ -56,7 +71,7 @@ module.exports = function (sequelize, DataTypes) {
     reviews.belongsTo(models.users, {
       foreignKey: "user_id",
     });
-    reviews.belongsTo(models.Burgers, {
+    reviews.belongsTo(models.Burger, {
       foreignKey: "burger_id",
     });
   };

@@ -2,7 +2,7 @@
 
 module.exports = function (sequelize, DataTypes) {
   const burgers = sequelize.define(
-    "Burgers",
+    "Burger",
     {
       id: {
         autoIncrement: true,
@@ -69,15 +69,26 @@ module.exports = function (sequelize, DataTypes) {
       timestamps: true,
       paranoid: true,
       underscored: true,
+      defaultScope: {
+        attributes: {
+          exclude: [
+            "brand_id",
+            "BrandId",
+            "createdAt",
+            "updatedAt",
+            "deletedAt",
+          ],
+        },
+      },
     }
   );
 
   burgers.associate = (models) => {
-    burgers.belongsTo(models.Brands, {
+    burgers.belongsTo(models.Brand, {
       foreignKey: "brand_id",
     });
-    burgers.hasMany(models.Reviews);
-    burgers.hasMany(models.BIngredients);
+    burgers.hasMany(models.Review);
+    burgers.hasMany(models.BIngredient);
   };
 
   return burgers;

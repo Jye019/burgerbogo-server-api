@@ -39,7 +39,6 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "models",
       "node_modules"
     ]
   }
