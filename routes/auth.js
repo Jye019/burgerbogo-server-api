@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import handlebars from 'handlebars';
-import db, { sequelize, Sequelize } from '../models';
+import { Email, User, sequelize } from '../models';
 import middleware from './middleware';
 
 const router = express.Router();
@@ -27,13 +27,13 @@ const sendEmail = async (req) => {
         const verifyKey = encodeURIComponent(key1 + key2); 
         const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
        
-        await db.users.update({verify_key: verifyKey}, {
+        await User.update({verify_key: verifyKey}, {
             where: {
                 email : req.body.email,
             }
         });
 
-        const email = await db.email_contents.findOne({
+        const email = await Email.findOne({
             attributes: ['id', 'subject', 'contents'],
             where : {
                 id : req.body.emailId,
@@ -89,7 +89,7 @@ router.post('/join', async (req, res) => {
         }
            
         // 계정 유무 확인
-        const exUser = await db.users.findOne({
+        const exUser = await User.findOne({
             where : {
                 email: req.body.email,
             }
@@ -104,7 +104,7 @@ router.post('/join', async (req, res) => {
         // 계정 생성
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-        await db.users.create({
+        await User.create({
             email: req.body.email,
             password: hashedPassword, 
         });
@@ -135,12 +135,12 @@ router.post('/join', async (req, res) => {
 router.get('/confirmEmail', async (req, res) => {
     try {
         const key = encodeURIComponent(req.query.key);
-        const userInfo = await db.users.findOne({
+        const userInfo = await User.findOne({
             where : {
-                [Sequelize.Op.and] : [
+                [sequelize.Op.and] : [
                     sequelize.where(
                         sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('createdAt')),
-                        { [Sequelize.Op.lt] : 1 }
+                        { [sequelize.Op.lt] : 1 }
                     ),
                     {verify_key : key}
                 ]
@@ -149,7 +149,7 @@ router.get('/confirmEmail', async (req, res) => {
     
         if(userInfo) {
             userInfo.verified = 1;
-            await db.users.update({verified: 1}, {
+            await User.update({verified: 1}, {
                 where: {
                     verify_key : key,
                 }
@@ -181,7 +181,7 @@ router.post('/reSend',  async (req, res) => {
     try {
         const success = sendEmail(req, res);
         if (success) {
-            const user = await db.users.findOne({
+            const user = await User.findOne({
                 attributes: { exclude: ['password'] },
                 where : {
                     email: req.body.email,
@@ -211,7 +211,7 @@ router.post('/reSend',  async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         // 로그인 
-        const userInfo = await db.users.findOne({
+        const userInfo = await User.findOne({
             where : {
                 email: req.body.email,
             }
@@ -222,7 +222,7 @@ router.post('/login', async (req, res) => {
     
             // 세션 발급 
             if(match) { 
-                const token = await jwt.sign(
+                const token = jwt.sign(
                     {
                         id: userInfo.id,
                         nickname: userInfo.nickname,
@@ -270,13 +270,13 @@ router.post('/detail', async(req, res) => {
         }
         
         // 닉네임 중복 체크
-        const user = await db.users.findOne({
+        const user = await User.findOne({
             where: {
-                [Sequelize.Op.and] : [
+                [sequelize.Op.and] : [
                     {nickname: req.body.nickname},
                     {   
                         email: {
-                            [Sequelize.Op.ne]: req.body.email
+                            [sequelize.Op.ne]: req.body.email
                         }
                     }
                 ]
@@ -291,7 +291,7 @@ router.post('/detail', async(req, res) => {
         }
 
         // 추가 정보 update
-        await db.users.update({
+        await User.update({
             nickname: req.body.nickname,
             gender: req.body.gender || null,
             birth_year: req.body.birth_year || null,
@@ -327,7 +327,7 @@ router.post('/reset-pw', async(req, res) => {
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-        await db.users.update({password: hashedPassword}, {
+        await User.update({password: hashedPassword}, {
             where : {
                 email: req.body.email
             }
