@@ -21,6 +21,11 @@ module.exports = function (sequelize, DataTypes) {
       timestamps: true,
       paranoid: true,
       underscored: true,
+      scopes: {
+        burgersToday: {
+          attributes: ["name"],
+        },
+      },
     }
   );
   brands.associate = (models) => {

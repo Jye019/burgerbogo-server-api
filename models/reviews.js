@@ -50,20 +50,24 @@ module.exports = function (sequelize, DataTypes) {
       timestamps: true,
       paranoid: true,
       underscored: true,
-      defaultScope: {
-        attributes: {
-          exclude: [
-            "user_id",
-            "burger_id",
-            "userId",
-            "BurgerId",
-            "createdAt",
-            "updatedAt",
-            "deletedAt",
-          ],
+      // defaultScope: {
+      //   attributes: {
+      //     exclude: [
+      //       "user_id",
+      //       "burger_id",
+      //       "userId",
+      //       "BurgerId",
+      //       "createdAt",
+      //       "updatedAt",
+      //       "deletedAt",
+      //     ],
+      //   },
+      // },
+      scopes: {
+        newReview: {
+          attributes: ["id"],
         },
       },
-      scopes: {},
     }
   );
 

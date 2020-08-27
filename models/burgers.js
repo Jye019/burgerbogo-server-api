@@ -69,14 +69,25 @@ module.exports = function (sequelize, DataTypes) {
       timestamps: true,
       paranoid: true,
       underscored: true,
-      defaultScope: {
-        attributes: {
-          exclude: [
-            "brand_id",
-            "BrandId",
-            "createdAt",
-            "updatedAt",
-            "deletedAt",
+      // defaultScope: {
+      //   attributes: {
+      //     exclude: [
+      //       "brand_id",
+      //       "BrandId",
+      //       "createdAt",
+      //       "updatedAt",
+      //       "deletedAt",
+      //     ],
+      //   },
+      // },
+      scopes: {
+        burgersToday: {
+          attributes: [
+            "name",
+            "price_single",
+            "price_set",
+            "price_combo",
+            "image",
           ],
         },
       },
@@ -89,6 +100,7 @@ module.exports = function (sequelize, DataTypes) {
     });
     burgers.hasMany(models.Review);
     burgers.hasMany(models.BIngredient);
+    burgers.hasMany(models.TBurger);
   };
 
   return burgers;

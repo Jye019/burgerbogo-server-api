@@ -1,5 +1,5 @@
 import express from "express";
-import { Review, Burger, users } from "../models";
+import { Review, Burger, Brand, users } from "../models";
 
 const router = express.Router();
 
@@ -21,6 +21,35 @@ router.get("/", async (req, res) => {
       include: [{ model: users }, { model: Burger }],
     });
     res.status(200).json({ message: "전체 버거리뷰 조회 성공", data: result });
+  } catch (err) {
+    res.status(500).json({ message: "오류 발생", error: err.stack });
+  }
+});
+
+router.get("/limit/:limit", async (req, res) => {
+  try {
+    const result = await Review.scope("newReview").findAll({
+      offset: 0,
+      limit: req.params.limit * 1,
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: Burger,
+          attributes: [
+            "name",
+            "price_single",
+            "price_set",
+            "price_combo",
+            "image",
+          ],
+          include: [{ model: Brand, attributes: ["name"] }],
+        },
+      ],
+    });
+    res.status(200).json({
+      message: `${req.params.limit}개의 최신 버거리뷰 조회 성공`,
+      data: result,
+    });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }

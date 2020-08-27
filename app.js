@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import auth from "./routes/auth";
 import burger from "./routes/burger";
+import burgerToday from "./routes/burger_today";
 import brand from "./routes/brand";
 import review from "./routes/review";
 import models from "./models";
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/auth", auth);
 app.use("/burger", burger);
+app.use("/burger_today", burgerToday);
 app.use("/brand", brand);
 app.use("/review", review);
 
