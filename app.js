@@ -2,7 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import auth from "./routes/auth";
 import burger from "./routes/burger";
-import burgerToday from "./routes/burger_today";
 import brand from "./routes/brand";
 import review from "./routes/review";
 import models from "./models";
@@ -19,7 +18,6 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/auth", auth);
 app.use("/burger", burger);
-app.use("/burger_today", burgerToday);
 app.use("/brand", brand);
 app.use("/review", review);
 
@@ -39,10 +37,8 @@ app.get("/", async (req, res, next) => {
 app.use("/auth", auth);
 
 // 에러 핸들러
-app.use((err, req, res, next) => {
-  console.log(err.stack);
-  res.status(500).json({ message: err.stack });
-  next();
+app.use((req, res) => {
+  res.status(404).json({ message: "404 Not Found" });
 });
 
 app.listen(3000, () => {

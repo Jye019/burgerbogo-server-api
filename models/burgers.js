@@ -80,18 +80,6 @@ module.exports = function (sequelize, DataTypes) {
       //     ],
       //   },
       // },
-      scopes: {
-        burgersToday: {
-          attributes: [
-            "id",
-            "name",
-            "price_single",
-            "price_set",
-            "price_combo",
-            "image",
-          ],
-        },
-      },
     }
   );
 
@@ -102,6 +90,17 @@ module.exports = function (sequelize, DataTypes) {
     burgers.hasMany(models.Review);
     burgers.hasMany(models.BIngredient);
     burgers.hasMany(models.TBurger);
+    burgers.addScope("burgersToday", {
+      attributes: [
+        "id",
+        "name",
+        "price_single",
+        "price_set",
+        "price_combo",
+        "image",
+      ],
+      include: [{ model: models.Brand, attributes: ["name"] }],
+    });
   };
 
   return burgers;
