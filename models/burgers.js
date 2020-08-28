@@ -83,6 +83,7 @@ module.exports = function (sequelize, DataTypes) {
       scopes: {
         burgersToday: {
           attributes: [
+            "id",
             "name",
             "price_single",
             "price_set",

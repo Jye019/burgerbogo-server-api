@@ -1,4 +1,5 @@
 import express from "express";
+import { Op } from "sequelize";
 import { Burger, TBurger, Brand } from "../models";
 
 const router = express.Router();
@@ -27,13 +28,16 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const result = await TBurger.findAll({
-      include: [
-        {
-          model: Burger.scope("burgersToday"),
-          include: [{ model: Brand.scope("burgersToday") }],
-        },
-      ],
+    const todayBurger = await TBurger.findAll({
+      attributes: [["burger_id", "id"]],
+    });
+    const filter = todayBurger.map((e) => e.dataValues);
+    console.log(filter);
+    const result = await Burger.scope("burgersToday").findAll({
+      include: [{ model: Brand.scope("burgersToday") }],
+      where: {
+        [Op.or]: filter,
+      },
     });
     res.status(200).json({ message: "오늘의 버거 조회 성공", data: result });
   } catch (err) {
