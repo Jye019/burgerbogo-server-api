@@ -24,12 +24,6 @@ app.use("/review", review);
 // env 설정
 dotenv.config();
 
-app.get("/", async (req, res) => {
-  res.send("success");
-});
-
-app.use("/auth", auth);
-
 // 에러 핸들러
 app.use((req, res) => {
   res.status(404).json({ message: "404 Not Found" });
