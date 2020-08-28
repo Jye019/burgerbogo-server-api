@@ -4,7 +4,8 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import handlebars from 'handlebars';
-import { Email, User, sequelize } from '../models';
+import sequelize from "sequelize";
+import { Email, User } from '../models';
 import middleware from './middleware';
 
 const router = express.Router();
@@ -22,8 +23,8 @@ const passwordValidation = (req) => {
 // 이메일 발송 
 const sendEmail = async (req) => {
     try {
-        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 91);
-        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 59);
+        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 51);
+        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 99);
         const verifyKey = encodeURIComponent(key1 + key2); 
         const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
        
@@ -36,7 +37,7 @@ const sendEmail = async (req) => {
         const email = await Email.findOne({
             attributes: ['id', 'subject', 'contents'],
             where : {
-                id : req.body.emailId,
+                id : req.body.email_id,
             }
         })
         
@@ -75,7 +76,7 @@ router.post('/join', async (req, res) => {
         if(!emailRegExp.test(req.body.email)) {
             return res.status(409).json({
                 code: 409, 
-                message: "invalid email",
+                message: "REGEXP_FAIL_EMAIL",
             });
         }
 
@@ -84,7 +85,7 @@ router.post('/join', async (req, res) => {
         if(!success) {
             return res.status(409).json({
                 code: 409,
-                message: "invalid password",
+                message: "REGEXP_FAIL_PASSWORD",
             })
         }
            
@@ -97,13 +98,12 @@ router.post('/join', async (req, res) => {
         if(exUser) {
             return res.status(409).json({
                 code: 409,
-                message: "duplicated",
+                message: "DUPLICATED_EMAIL",
             })
         } 
 
         // 계정 생성
-        const salt = bcrypt.genSaltSync(10);
-        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        const hashedPassword = await bcrypt.hash(req.body.password, bcrypt.genSaltSync(10));
         await User.create({
             email: req.body.email,
             password: hashedPassword, 
@@ -114,19 +114,20 @@ router.post('/join', async (req, res) => {
         if(result) {
             return res.status(200).json({
                 code: 200,
-                message: "email send success"
+                message: "EXTSERV_MAIL_SUCCESS"
             })
         }
         return res.status(409).json({
-            code: 409,
-            message: "email send fail"
+            code: 500,
+            message: "EXTSERV_MAIL_FAIL"
         })
        
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
             code: 500,
-            message: err.stack, 
+            message: "ERROR", 
+            error: err.stack
         });
     }    
 });
@@ -135,14 +136,15 @@ router.post('/join', async (req, res) => {
 router.get('/confirmEmail', async (req, res) => {
     try {
         const key = encodeURIComponent(req.query.key);
-        const userInfo = await User.findOne({
-            where : {
+        const userInfo = await User.findOne(
+            { attributes: {exclude: ['password']}},
+            { where: {
                 [sequelize.Op.and] : [
                     sequelize.where(
-                        sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('createdAt')),
-                        { [sequelize.Op.lt] : 1 }
+                        sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('created_at')),
+                        { [sequelize.Op.lt]: 1 }
                     ),
-                    {verify_key : key}
+                    {verify_key: key}
                 ]
             }
         });
@@ -157,14 +159,14 @@ router.get('/confirmEmail', async (req, res) => {
             
             return res.status(200).json({
                 code: 200,
-                message: "email check success",
+                message: "CHECK_MAIL_SUCCESS",
                 data: {"userData": {...userInfo.dataValues}}
             });
         } 
         
         return res.status(401).json({
             code: 401,
-            message: "expired email key",
+            message: "EXPIRED_KEY",
         });
     } catch (err) {
         console.error(err);
@@ -190,14 +192,14 @@ router.post('/reSend',  async (req, res) => {
 
             return res.status(200).json({ 
                 code: 200,
-                message: success, 
+                message: "CHECK_MAIL_SUCCESS", 
                 data : user,
             });
         } 
 
         return res.status(500).json({
             code: 500,
-            message: 'send email fail',
+            message: 'EXTSERV_MAIL_FAIL',
         })
     } catch (err) {
         console.error(err);
@@ -216,38 +218,40 @@ router.post('/login', async (req, res) => {
                 email: req.body.email,
             }
         })
-   
+        
         if(userInfo) {
-            const match = await bcrypt.compare(req.body.password, userInfo.password);
-    
-            // 세션 발급 
-            if(match) { 
-                const token = jwt.sign(
-                    {
-                        id: userInfo.id,
-                        nickname: userInfo.nickname,
-                    }, 
-                    (process.env.JWT_SECRET || 'xu5q!p1'),
-                    {
-                        expiresIn: '30m',
-                        issuer: 'nsm',
-                    }
-                )
-                // cookie에 저장
-                res.cookie('jwt', token, { httpOnly: true, maxAge: 1000 * 60 * 30})
-                return res.json({
-                    code: 200,
-                    message: 'session issuance',
-                    token
+            if(await bcrypt.compare(req.body.password, userInfo.password)) {
+                if(userInfo.verified === 1) {
+                    // 세션 발급 
+                    const token = jwt.sign({ id: userInfo.id, nickname: userInfo.nickname,}, 
+                                           ( process.env.JWT_SECRET || 'xu5q!p1' ),
+                                           { expiresIn: '30m', issuer: 'nsm',});
+                    // cookie에 저장
+                    res.cookie('jwt', token, { httpOnly: true, maxAge: 1000 * 60 * 30});
+                    // return userData
+                  
+                    const {password, verify_key,...userData} = userInfo.dataValues;
+                    console.log(userInfo.dataValues)
+
+                    return res.json({
+                        code: 200,
+                        message: 'session issuance',
+                        data: {
+                            "userData": userData,
+                            token
+                        }
+                    });
+                }  
+                return res.status(401).json({
+                    code: 401,
+                    message: "not verified",
                 });
             } 
         } 
-    
         return res.status(401).json({
             code: 401,
             message: "incorrect login info",
-        })
-
+        });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
@@ -348,7 +352,7 @@ router.post('/reset-pw', async(req, res) => {
 
 
 // jwt 확인
-router.get('/verify', middleware.verifyToken, (req, res) => {
+router.post('/verify', middleware.verifyToken, (req, res) => {
     res.json(req.decoded);
 });
 

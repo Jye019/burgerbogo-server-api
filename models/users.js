@@ -29,18 +29,6 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.STRING(30),
 			allowNull: false
 		},
-		createdAt: {
-			type: DataTypes.DATE,
-			allowNull: true
-		},
-		updatedAt: {
-			type: DataTypes.DATE,
-			allowNull: true
-		},
-		deletedAt: {
-			type: DataTypes.DATE,
-			allowNull: true
-		},
 		verified: {
 			type: DataTypes.INTEGER(1),
 			allowNull: true,
@@ -58,6 +46,7 @@ module.exports = function(sequelize, DataTypes) {
 		sequelize,
 		tableName: 'users',
 		timestamps: true,
-		paranoid: true
+		paranoid: true,
+		underscored: true,
 	});
 };
