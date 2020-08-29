@@ -12,11 +12,11 @@ module.exports = function (sequelize, DataTypes) {
       },
       name: {
         type: DataTypes.STRING(45),
-        allowNull: true,
+        allowNull: false,
       },
       type: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
       },
     },
     {

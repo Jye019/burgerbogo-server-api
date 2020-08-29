@@ -1,5 +1,4 @@
 /* jshint indent: 1 */
-import { users, Burger } from "./index";
 
 module.exports = function (sequelize, DataTypes) {
   const reviews = sequelize.define(
@@ -72,7 +71,7 @@ module.exports = function (sequelize, DataTypes) {
   );
 
   reviews.associate = (models) => {
-    reviews.belongsTo(models.users, {
+    reviews.belongsTo(models.User, {
       foreignKey: "user_id",
     });
     reviews.belongsTo(models.Burger, {
