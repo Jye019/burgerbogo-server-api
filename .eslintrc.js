@@ -8,5 +8,5 @@ module.exports = {
     ecmaVersion: 11,
     sourceType: "module",
   },
-  rules: { "no-console": "off" },
+  rules: { "no-console": "off", "no-underscore-dangle": "off" },
 };

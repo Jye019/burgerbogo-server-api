@@ -1,5 +1,7 @@
-const config = { a: 1, b: 2 };
+const arr = [{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }];
 
-const obj = { a: 1, b: 2, config };
+arr.forEach((e) => {
+  e.a = 4;
+});
 
-console.log(obj);
+console.log(arr);
