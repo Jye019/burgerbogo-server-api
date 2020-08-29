@@ -1,5 +1,6 @@
 import express from "express";
 import { Brand } from "../models";
+import { parseQueryString } from "../library/parsing";
 
 const router = express.Router();
 
@@ -17,21 +18,9 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const result = await Brand.findAll();
-    res.status(200).json({ message: "전체 브랜드 조회 성공", data: result });
-  } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
-  }
-});
-
-router.get("/:id", async (req, res) => {
-  try {
-    const result = await Brand.findOne({ where: { id: req.params.id } });
-    if (result) {
-      res.status(200).json({ message: "브랜드 조회 성공", data: result });
-    } else {
-      res.status(502).json({ message: "존재하지 않는 브랜드" });
-    }
+    const { where, attributes } = parseQueryString(req.query);
+    const result = await Brand.findAll({ where, attributes });
+    res.status(200).json({ message: "브랜드 조회 성공", data: result });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }

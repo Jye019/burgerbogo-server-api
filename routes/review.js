@@ -1,5 +1,6 @@
 import express from "express";
-import { Review, Burger, Brand, users } from "../models";
+import { Review, Burger, Brand, User } from "../models";
+import { parseQueryString } from "../library/parsing";
 
 const router = express.Router();
 
@@ -17,10 +18,16 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const result = await Review.findAll({
-      include: [{ model: users }, { model: Burger }],
+    const { include, where, attributes } = parseQueryString(req.query, {
+      Burger,
+      User,
     });
-    res.status(200).json({ message: "전체 버거리뷰 조회 성공", data: result });
+    const result = await Review.findAll({
+      include,
+      where,
+      attributes,
+    });
+    res.status(200).json({ message: "버거리뷰 조회 성공", data: result });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }

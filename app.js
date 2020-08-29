@@ -24,14 +24,8 @@ app.use("/review", review);
 // env 설정
 dotenv.config();
 
-app.get("/", async (req, res, next) => {
-  const userModel = models.users;
-  try {
-    const users = await userModel.findAll();
-    res.json(users);
-  } catch (err) {
-    next(err);
-  }
+app.get("/", async (req, res) => {
+  res.send("success");
 });
 
 app.use("/auth", auth);

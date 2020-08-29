@@ -4,7 +4,8 @@ import aws from "aws-sdk";
 import multer from "multer";
 import multerS3 from "multer-s3";
 import { Op } from "sequelize";
-import models, { Burger, TBurger, Brand } from "../models";
+import { Burger, TBurger, Brand, Review } from "../models";
+import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
 
 // 사진 Upload 설정 부분
@@ -121,47 +122,9 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    let includeTmp = [];
-    let attributeTmp = [];
-
-    if (req.query._include) {
-      includeTmp = req.query._include.split(",");
-      delete req.query._include;
-    }
-    if (req.query._attribute) {
-      attributeTmp = req.query._attribute.split(",");
-      delete req.query._attribute;
-    }
-    const where = req.query;
-
-    const include = [];
-    let attributes = [];
-
-    if (includeTmp) {
-      includeTmp.forEach((inc) => {
-        include.push({ model: models[inc] });
-      });
-    }
-    if (attributeTmp) {
-      attributeTmp.forEach((att) => {
-        const split = att.split(".");
-        if (split.length === 1) attributes.push(split[0]);
-        else {
-          include.forEach((e) => {
-            if (e.model === models[split[0]]) {
-              if (!e.attributes) e.attributes = [];
-              e.attributes.push(split[1]);
-            }
-          });
-        }
-      });
-    }
-
-    if (attributes.length === 0) attributes = null;
-    console.log({
-      include,
-      where,
-      attributes,
+    const { include, where, attributes } = parseQueryString(req.query, {
+      Brand,
+      Review,
     });
 
     const result = await Burger.findAll({
