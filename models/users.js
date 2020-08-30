@@ -16,7 +16,7 @@ module.exports = function(sequelize, DataTypes) {
 			type: 'YEAR',
 			allowNull: true
 		},
-		is_admin: {
+		user_level: {
 			type: DataTypes.INTEGER(1),
 			allowNull: true,
 			defaultValue: 0
