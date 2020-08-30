@@ -3,6 +3,9 @@ const parseQueryString = (_query, models) => {
   const query = _query;
   let includeTmp = [];
   let attributeTmp = [];
+  let order = [];
+  let limit = 0;
+  let offset = 0;
   if (query._include) {
     includeTmp = query._include.split(",");
     delete query._include;
@@ -11,6 +14,19 @@ const parseQueryString = (_query, models) => {
     attributeTmp = query._attribute.split(",");
     delete query._attribute;
   }
+  if (query._order) {
+    order.push(query._order.split(" "));
+    delete query._order;
+  } else order = null;
+  if (query._limit) {
+    limit = query._limit * 1;
+    delete query._limit;
+  } else limit = null;
+  if (query._offset) {
+    offset = limit * (query._offset * 1 - 1);
+    delete query._offset;
+  } else offset = null;
+
   const where = query;
   /* -------------------------*/
 
@@ -51,8 +67,11 @@ const parseQueryString = (_query, models) => {
     include,
     where,
     attributes,
+    limit,
+    offset,
+    order,
   });
-  return { include, where, attributes };
+  return { include, where, attributes, limit, offset, order };
 };
 
 export { parseQueryString };

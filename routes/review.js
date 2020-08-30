@@ -18,15 +18,11 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { include, where, attributes } = parseQueryString(req.query, {
+    const parsed = parseQueryString(req.query, {
       Burger,
       User,
     });
-    const result = await Review.findAll({
-      include,
-      where,
-      attributes,
-    });
+    const result = await Review.findAll(parsed);
     res.status(200).json({ message: "버거리뷰 조회 성공", data: result });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });

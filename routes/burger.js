@@ -122,16 +122,12 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { include, where, attributes } = parseQueryString(req.query, {
+    const parsed = parseQueryString(req.query, {
       Brand,
       Review,
     });
 
-    const result = await Burger.findAll({
-      include,
-      where,
-      attributes,
-    });
+    const result = await Burger.findAll(parsed);
     if (result) {
       res.status(200).json({ message: "버거 조회 성공", data: result });
     } else {

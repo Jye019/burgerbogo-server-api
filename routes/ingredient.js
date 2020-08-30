@@ -19,8 +19,8 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { where, attributes } = parseQueryString(req.query);
-    const result = await Ingredient.findAll({ where, attributes });
+    const parsed = parseQueryString(req.query);
+    const result = await Ingredient.findAll(parsed);
     res.status(200).json({ message: "재료 조회 성공", data: result });
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
