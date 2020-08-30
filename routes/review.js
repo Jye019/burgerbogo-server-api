@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/limit/:limit", async (req, res) => {
+router.get("/recent/:limit", async (req, res) => {
   try {
     const result = await Review.scope("newReview").findAll({
       offset: 0,
