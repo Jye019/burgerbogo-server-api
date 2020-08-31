@@ -62,11 +62,6 @@ module.exports = function (sequelize, DataTypes) {
       //     ],
       //   },
       // },
-      scopes: {
-        newReview: {
-          attributes: ["id"],
-        },
-      },
     }
   );
 
@@ -76,6 +71,24 @@ module.exports = function (sequelize, DataTypes) {
     });
     reviews.belongsTo(models.Burger, {
       foreignKey: "burger_id",
+    });
+    reviews.addScope("newReview", {
+      order: [["createdAt", "DESC"]],
+      attributes: ["id"],
+      include: [
+        {
+          model: models.Burger,
+          attributes: [
+            "id",
+            "name",
+            "price_single",
+            "price_set",
+            "price_combo",
+            "image",
+          ],
+          include: [{ model: models.Brand, attributes: ["name"] }],
+        },
+      ],
     });
   };
 

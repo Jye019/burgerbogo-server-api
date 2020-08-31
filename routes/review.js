@@ -1,5 +1,5 @@
 import express from "express";
-import { Review, Burger, Brand, User } from "../models";
+import { Review, Burger, User } from "../models";
 import { parseQueryString } from "../library/parsing";
 
 const router = express.Router();
@@ -34,20 +34,6 @@ router.get("/recent/:limit", async (req, res) => {
     const result = await Review.scope("newReview").findAll({
       offset: 0,
       limit: req.params.limit * 1,
-      order: [["createdAt", "DESC"]],
-      include: [
-        {
-          model: Burger,
-          attributes: [
-            "name",
-            "price_single",
-            "price_set",
-            "price_combo",
-            "image",
-          ],
-          include: [{ model: Brand, attributes: ["name"] }],
-        },
-      ],
     });
     res.status(200).json({
       message: `${req.params.limit}개의 최신 버거리뷰 조회 성공`,
