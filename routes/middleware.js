@@ -1,4 +1,8 @@
 import jwt from 'jsonwebtoken';
+import handlebars from 'handlebars';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import { Email, User } from '../models';
 
 // 로그인 상태인지 확인
 exports.isLoggedIn = (req, res, next) => {
@@ -36,6 +40,62 @@ exports.verifyToken = (req, res, next) => {
         return res.status(401).json({
             code: 401,
             message: 'invalid token',
+        })
+    }
+}
+
+// 이메일 전송 
+exports.sendEmail = async (req, res, emailType) => {
+    try {
+        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 51);
+        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 99);
+        const verifyKey = encodeURIComponent(key1 + key2); 
+        const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
+       
+        await User.update({verify_key: verifyKey}, {
+            where: {
+                email : req.body.email,
+            }
+        });
+
+        const email = await Email.findOne({
+            attributes: ['id', 'subject', 'contents'],
+            where : {
+                id : emailType,
+            }
+        })
+        
+        const template = handlebars.compile(email.contents);
+        let contents = template();
+        if(email.id===1) {
+            contents = template({verifyLink});
+        }
+        
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            auth: {
+                user: process.env.NSM_EMAIL,
+                pass: process.env.NSM_EMAIL_PW,
+            }
+        });
+        
+        let success = true;
+        transporter.sendMail({
+            from: `버거보고 <${process.env.NSM_EMAIL}>`,
+            to: req.body.email,
+            subject: email.subject,
+            html: contents,
+        }, (error) => {
+            if(error) {
+                success = false;
+            }
+        });
+        return success;
+    } catch (err) {  
+        console.log(err);
+        return res.status(409).json({
+            code: "ERROR",
+            error: err.stack
         })
     }
 }
