@@ -27,8 +27,9 @@ exports.isNotLoggedIn = (req, res, next) => {
 // 클라이언트로부터 받은 jwt 검증
 exports.verifyToken = (req, res, next) => {
     try {
-        req.decoded = jwt.verify(req.headers.authorization, (process.env.JWT_SECRET || 'xu5q!p1'));
-        return next();
+        console.log(req.headers)
+        req.decoded = jwt.verify(req.headers.cookie.token, (process.env.JWT_SECRET || 'xu5q!p1'));
+        next();
     } catch (err) {
         if(err.name === 'TokenExpriedError') {
             return res.status(419).json({
@@ -47,8 +48,8 @@ exports.verifyToken = (req, res, next) => {
 // 이메일 전송 
 exports.sendEmail = async (req, res, emailType) => {
     try {
-        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 51);
-        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 99);
+        const key1 = crypto.randomBytes(256).toString('hex').substring(99, 51);
+        const key2 = crypto.randomBytes(256).toString('base64').substring(51, 99);
         const verifyKey = encodeURIComponent(key1 + key2); 
         const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
        

@@ -9,11 +9,10 @@ const router = express.Router();
 
 // 비밀번호 validation 
 const passwordValidation = (req) => {
-    const pwdRegExp = /^.*(?=.{8,20})(?=.*[0-9])(?=.*[a-zA-Z]).*$/;
+    const pwdRegExp = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
     if (!pwdRegExp.test(req.body.password)) {
         return false;
     }
-    
     return true;
 }
 
@@ -81,7 +80,7 @@ router.post('/send',  async (req, res) => {
         });
     } catch (err) {  
         console.log(err);
-        return res.status(409).json({
+        return res.status(500).json({
             code: "ERROR",
             error: err.stack
         })
@@ -92,14 +91,11 @@ router.post('/send',  async (req, res) => {
 router.get('/confirmEmail', async (req, res) => {
     try {
         const key = encodeURIComponent(req.query.key);
-        const userInfo = await User.findOne(
-            { attributes: {exclude: ['password']}},
-            { where: {
+        const userInfo = await User.findOne({ 
+            attributes: {exclude: ['password']},
+            where: {
                 [sequelize.Op.and] : [
-                    sequelize.where(
-                        sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('created_at')),
-                        { [sequelize.Op.lt]: 1 }
-                    ),
+                    sequelize.where(sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('created_at')),{ [sequelize.Op.lt]: 1}),
                     {verify_key: key}
                 ]
             }
@@ -148,7 +144,7 @@ router.post('/login', async (req, res) => {
                                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
                                            { expiresIn: '30m', issuer: 'nsm',});
                     // cookie에 저장
-                    res.cookie('jwt', token, { httpOnly: true, maxAge: 1000 * 60 * 30});
+                    res.cookie('token', token, { httpOnly: true, maxAge: 1000 * 60 * 30});
                   
                     // return userData
                     const {password, verify_key,...userData} = userInfo.dataValues;
@@ -192,11 +188,7 @@ router.post('/detail', async(req, res) => {
             where: {
                 [sequelize.Op.and] : [
                     {nickname: req.body.nickname},
-                    {   
-                        email: {
-                            [sequelize.Op.ne]: req.body.email
-                        }
-                    }
+                    {email: {[sequelize.Op.ne]: req.body.email}}
                 ]
             }
         })
@@ -231,8 +223,7 @@ router.post('/detail', async(req, res) => {
 // 비밀번호 재설정
 router.post('/reset-pw', async(req, res) => {
     try {
-        const success = passwordValidation(req);
-        if(!success) {
+        if(!passwordValidation(req)) {
             return res.status(409).json({
                 code: "AUTH_REGEXP_FAIL_PASSWORD",
             })
