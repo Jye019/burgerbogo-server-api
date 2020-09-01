@@ -1,11 +1,8 @@
 import express from "express";
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
-import handlebars from 'handlebars';
 import sequelize from "sequelize";
-import { Email, User } from '../models';
+import { User } from '../models';
 import middleware from './middleware';
 
 const router = express.Router();
@@ -26,7 +23,7 @@ router.post('/join', async (req, res) => {
         // 이메일 validation 체크
         const emailRegExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
         if(!emailRegExp.test(req.body.email)) {
-            res.status(409).json({
+            return res.status(409).json({
                 code: "AUTH_REGEXP_FAIL_EMAIL",
             });
         }
@@ -34,7 +31,7 @@ router.post('/join', async (req, res) => {
         // 비밀번호 validation 체크
         const success = passwordValidation(req);
         if(!success) {
-            res.status(409).json({
+            return res.status(409).json({
                 code: "AUTH_REGEXP_FAIL_PASSWORD",
             })
         }
@@ -46,7 +43,7 @@ router.post('/join', async (req, res) => {
             }
         });
         if(exUser) {
-            res.status(409).json({
+            return res.status(409).json({
                 code: "AUTH_DUPLICATED_EMAIL",
             })
         } 
@@ -58,10 +55,15 @@ router.post('/join', async (req, res) => {
             password: hashedPassword, 
         });
 
-        res.status(200).json({});
+        if(middleware.sendEmail(req, res, 1)) {
+            res.status(200).json({});
+        };
+        return res.status(500).json({
+            code: "AUTH_EXTSERV_MAIL_FAIL"
+        });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ 
+        return res.status(500).json({ 
             code: "ERROR", 
             error: err.stack
         });
@@ -71,55 +73,15 @@ router.post('/join', async (req, res) => {
 // 이메일 인증 재전송
 router.post('/send',  async (req, res) => {
     try {
-        const key1 = crypto.randomBytes(256).toString('hex').substring(100, 51);
-        const key2 = crypto.randomBytes(256).toString('base64').substring(50, 99);
-        const verifyKey = encodeURIComponent(key1 + key2); 
-        const verifyLink = `http://${req.get('host')}/auth/confirmEmail?key=${verifyKey}`;
-       
-        await User.update({verify_key: verifyKey}, {
-            where: {
-                email : req.body.email,
-            }
+        if(middleware.sendEmail(req, res, 1)) {
+            res.status(200).json({});
+        };
+        return res.status(500).json({
+            code: "AUTH_EXTSERV_MAIL_FAIL"
         });
-
-        const email = await Email.findOne({
-            attributes: ['id', 'subject', 'contents'],
-            where : {
-                id : req.body.email_id,
-            }
-        })
-        
-        const template = handlebars.compile(email.contents);
-        let contents = template();
-        if(email.id===1) {
-            contents = template({verifyLink});
-        }
-        
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            auth: {
-                user: process.env.NSM_EMAIL,
-                pass: process.env.NSM_EMAIL_PW,
-            }
-        });
-        
-        transporter.sendMail({
-            from: `버거보고 <${process.env.NSM_EMAIL}>`,
-            to: req.body.email,
-            subject: email.subject,
-            html: contents,
-        }, (error) => {
-            if(error) {
-                res.status(500).json({
-                    code: "AUTH_EXTSERV_MAIL_FAIL"
-                });
-            }   
-        });
-           
-        res.status(200).json({})
     } catch (err) {  
         console.log(err);
-        res.status(409).json({
+        return res.status(409).json({
             code: "ERROR",
             error: err.stack
         })
@@ -151,17 +113,17 @@ router.get('/confirmEmail', async (req, res) => {
                 }
             });
             
-            res.status(200).json({
+            return res.status(200).json({
                 data: {"userData": {...userInfo.dataValues}}
             });
         } 
         
-        res.status(401).json({
+        return res.status(401).json({
             code: "AUTH_EXPIRED",
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ 
+        return res.status(500).json({ 
             code: "ERROR",
             error: err.stack 
         });
@@ -190,24 +152,24 @@ router.post('/login', async (req, res) => {
                   
                     // return userData
                     const {password, verify_key,...userData} = userInfo.dataValues;
-                    res.status(200).json({
+                    return res.status(200).json({
                         data: {
                             "userData": userData,
                             token
                         }
                     });
                 }  
-                res.status(401).json({
+                return res.status(401).json({
                     code: "AUTH_LOGIN_FAIL_VERIFY",
                 });
             } 
         } 
-        res.status(401).json({
+        return res.status(401).json({
             code: "AUTH_LOGIN_FAIL_INFO",
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ 
+        return res.status(500).json({ 
             code: "ERROR",
             error: err.stack 
         });
@@ -220,7 +182,7 @@ router.post('/detail', async(req, res) => {
         // 닉네임 validation 체크
         const nicknameRegExp = /^[ㄱ-ㅎ가-힣a-zA-Z]{1,10}$/;
         if(!nicknameRegExp.test(req.body.nickname)) {
-            res.status(409).json({
+            return res.status(409).json({
                 code: "AUTH_REGEXP_FAIL_NICKNAME",
             });
         }
@@ -240,7 +202,7 @@ router.post('/detail', async(req, res) => {
         })
 
         if(user) {
-            res.status(409).json({
+            return res.status(409).json({
                 code: 'AUTH_DUPLICATED_NICNAME'
             })
         }
@@ -256,10 +218,10 @@ router.post('/detail', async(req, res) => {
             }
         })
 
-        res.status(200).json({})
+        return res.status(200).json({})
     } catch (err) {
         console.error(err);
-        res.status(500).json({ 
+        return res.status(500).json({ 
             code: "ERROR", 
             message: err.stack 
         });
@@ -271,7 +233,7 @@ router.post('/reset-pw', async(req, res) => {
     try {
         const success = passwordValidation(req);
         if(!success) {
-            res.status(409).json({
+            return res.status(409).json({
                 code: "AUTH_REGEXP_FAIL_PASSWORD",
             })
         }
@@ -284,10 +246,10 @@ router.post('/reset-pw', async(req, res) => {
             }
         })
 
-        res.status(200).json({})
+        return res.status(200).json({})
     } catch (err) {
         console.error(err);
-        res.status(500).json({ 
+        return res.status(500).json({ 
             code: "ERROR", 
             message: err.stack 
         });
@@ -297,7 +259,7 @@ router.post('/reset-pw', async(req, res) => {
 
 // jwt 확인
 router.post('/verify', middleware.verifyToken, (req, res) => {
-    res.json(req.decoded);
+    return res.json(req.decoded);
 });
 
 export default router;
