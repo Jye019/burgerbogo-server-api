@@ -21,7 +21,11 @@ router.get("/", async (req, res) => {
   try {
     const parsed = parseQueryString(req.query);
     const result = await Ingredient.findAll(parsed);
-    res.status(200).json({ message: "재료 조회 성공", data: result });
+    if (result) {
+      res.status(200).json({ message: "재료 조회 성공", data: result });
+    } else {
+      res.status(502).json({ message: "일치하는 재료 없음" });
+    }
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }
@@ -67,7 +71,11 @@ router.get("/burger", async (req, res) => {
       Ingredient,
     });
     const result = await BIngredient.findAll({ where, attributes, include });
-    res.status(200).json({ message: "재료in버거 조회 성공", data: result });
+    if (result) {
+      res.status(200).json({ message: "재료in버거 조회 성공", data: result });
+    } else {
+      res.status(502).json({ message: "일치하는 재료in버거 없음" });
+    }
   } catch (err) {
     res.status(500).json({ message: "오류 발생", error: err.stack });
   }

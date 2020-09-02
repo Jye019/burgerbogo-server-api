@@ -7,15 +7,17 @@ const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
+// 리뷰 추가
 router.post("/", async (req, res) => {
   try {
     await Review.create(req.body);
-    res.status(200).json({ message: "버거리뷰 추가 성공" });
+    res.status(200).json({});
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 
+// 리뷰 조회
 router.get("/", async (req, res) => {
   try {
     const parsed = parseQueryString(req.query, {
@@ -23,12 +25,13 @@ router.get("/", async (req, res) => {
       User,
     });
     const result = await Review.findAll(parsed);
-    res.status(200).json({ message: "버거리뷰 조회 성공", data: result });
+    res.status(200).json({ data: result });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 
+// 최신리뷰 조회
 router.get("/recent/:limit", async (req, res) => {
   try {
     const result = await Review.scope("newReview").findAll({
@@ -36,46 +39,34 @@ router.get("/recent/:limit", async (req, res) => {
       limit: req.params.limit * 1,
     });
     res.status(200).json({
-      message: `${req.params.limit}개의 최신 버거리뷰 조회 성공`,
       data: result,
     });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 
-router.get("/:id", async (req, res) => {
-  try {
-    const result = await Review.findOne({ where: { id: req.params.id } });
-    if (result) {
-      res.status(200).json({ message: "버거리뷰 조회 성공", data: result });
-    } else {
-      res.status(502).json({ message: "존재하지 않는 버거리뷰" });
-    }
-  } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
-  }
-});
-
+// 리뷰 수정
 router.put("/", async (req, res) => {
   try {
     if (await Review.findOne({ where: { id: req.body.id } })) {
       await Review.update(req.body.data, { where: { id: req.body.id } });
-      res.status(200).json({ message: "버거리뷰 수정 성공" });
-    } else res.status(502).json({ message: "존재하지 않는 버거리뷰" });
+      res.status(200).json({});
+    } else res.status(502).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 
+// 리뷰 삭제
 router.delete("/", async (req, res) => {
   try {
     if (await Review.findOne({ where: { id: req.body.id } })) {
       await Review.destroy({ where: { id: req.body.id } });
-      res.status(200).json({ message: "버거리뷰 삭제 성공" });
-    } else res.status(502).json({ message: "존재하지 않는 버거리뷰" });
+      res.status(200).json({});
+    } else res.status(502).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 

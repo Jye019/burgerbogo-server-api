@@ -37,7 +37,7 @@ const parseQueryString = (_query, models) => {
   if (includeTmp) {
     // Parsing include
     includeTmp.forEach((inc) => {
-      include.push({ model: models[inc] });
+      if (models[inc]) include.push({ model: models[inc] });
     });
   }
 

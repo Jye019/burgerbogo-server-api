@@ -3,7 +3,7 @@ import path from "path";
 import aws from "aws-sdk";
 import multer from "multer";
 import multerS3 from "multer-s3";
-import { Op } from "sequelize";
+import seq, { Op } from "sequelize";
 import { Burger, TBurger, Brand, Review } from "../models";
 import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
@@ -34,6 +34,7 @@ router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
 /*                오늘의 버거 Start               */
+// 오늘의버거 입력
 router.post("/today", async (req, res) => {
   try {
     if (
@@ -42,14 +43,15 @@ router.post("/today", async (req, res) => {
       })
     ) {
       await TBurger.create(req.body);
-      res.status(200).json({ message: "오늘의 버거 작성 성공" });
+      res.status(200).json({});
     } else {
-      res.status(502).json({ message: "존재하지 않는 버거" });
+      res.status(406).json({ code: "BURGER_INVALID_ID" });
     }
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
+// 오늘의버거 조회
 router.get("/today", async (req, res) => {
   try {
     const todayBurger = await TBurger.findAll({
@@ -62,30 +64,36 @@ router.get("/today", async (req, res) => {
         [Op.or]: filter,
       },
     });
-    res.status(200).json({ message: "오늘의 버거 조회 성공", data: result });
+    res.status(200).json({ data: result });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
+// 오늘의버거 삭제
 router.delete("/today", async (req, res) => {
   try {
     if (await TBurger.findOne({ where: { id: req.body.id } })) {
       await TBurger.destroy({ where: { id: req.body.id } });
-      res.status(200).json({ message: "오늘의 버거 삭제 성공" });
-    } else res.status(502).json({ message: "존재하지 않는 오늘의 버거" });
+      res.status(200).json({});
+    } else res.status(406).json({ code: "BURGER_TODAY_INVALID_ID" });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 /*                오늘의 버거 End               */
 
 /*                버거 Start                    */
-router.post("/image", upload.single("image"), (req, res) => {
-  res
-    .status(200)
-    .json({ message: "버거사진 업로드 성공", path: req.file.location });
+// 버거 이미지 등록
+router.post("/image", (req, res) => {
+  upload.single("image")(req, res, (err) => {
+    if (err) {
+      return res.status(500).json({ code: "BURGER_IMAGE_UPLOAD" });
+    }
+    return res.status(200).json({ path: req.file.location });
+  });
 });
 
+// 버거 등록
 router.post("/", async (req, res) => {
   try {
     if (
@@ -94,69 +102,60 @@ router.post("/", async (req, res) => {
       })
     ) {
       await Burger.create(req.body);
-      res.status(200).json({ message: "버거 작성 성공" });
+      res.status(200).json({});
     } else {
-      res.status(502).json({ message: "존재하지 않는 브랜드" });
+      res.status(406).json({ code: "BRAND_INVALID_ID" });
     }
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 
-// router.get("/limit/:limit/:order", async (req, res) => {
-//   try {
-//     const result = await Burger.findAll({
-//       offset: 0,
-//       limit: req.params.limit * 1,
-//       order: [["createdAt", req.params.order]],
-//       include: [{ model: Brand, attributes: ["name"] }],
-//     });
-//     res.status(200).json({
-//       message: `${req.params.limit}개의 버거 ${req.params.order}로 조회 성공`,
-//       data: result,
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message: "오류 발생", error: err.stack });
-//   }
-// });
-
+// 버거 조회
 router.get("/", async (req, res) => {
   try {
     const parsed = parseQueryString(req.query, {
       Brand,
       Review,
     });
-
     const result = await Burger.findAll(parsed);
-    if (result) {
-      res.status(200).json({ message: "버거 조회 성공", data: result });
-    } else {
-      res.status(502).json({ message: "일치하는 버거 없음" });
-    }
+    res.status(200).json({ data: result });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    if (err instanceof seq.ValidationError) {
+      res
+        .status(401)
+        .json({ code: "SEQUELIZE_VALIDATION_ERROR", err: err.stack });
+    } else if (err instanceof seq.DatabaseError) {
+      res
+        .status(401)
+        .json({ code: "SEQUELIZE_DATABASE_ERROR", err: err.stack });
+    } else {
+      res.status(500).json({ code: "ERROR", error: err.stack });
+    }
   }
 });
 
+// 버거 수정
 router.put("/", async (req, res) => {
   try {
     if (await Burger.findOne({ where: { id: req.body.id } })) {
       await Burger.update(req.body.data, { where: { id: req.body.id } });
-      res.status(200).json({ message: "버거 수정 성공" });
-    } else res.status(502).json({ message: "존재하지 않는 버거" });
+      res.status(200).json({});
+    } else res.status(406).json({ code: "BURGER_INVALID_ID" });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 
+// 버거 삭제
 router.delete("/", async (req, res) => {
   try {
     if (await Burger.findOne({ where: { id: req.body.id } })) {
       await Burger.destroy({ where: { id: req.body.id } });
-      res.status(200).json({ message: "버거 삭제 성공" });
-    } else res.status(502).json({ message: "존재하지 않는 버거" });
+      res.status(200).json({});
+    } else res.status(406).json({ code: "BURGER_INVALID_ID" });
   } catch (err) {
-    res.status(500).json({ message: "오류 발생", error: err.stack });
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 /*                버거 End                    */
