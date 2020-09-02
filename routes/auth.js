@@ -144,7 +144,7 @@ router.post('/login', async (req, res) => {
                                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
                                            { expiresIn: '30m', issuer: 'nsm',});
                     // cookie에 저장
-                    res.cookie('token', token, { httpOnly: true, maxAge: 1000 * 60 * 30});
+                    // res.cookie('token', token, { httpOnly: true, maxAge: 1000 * 60 * 30});
                   
                     // return userData
                     const {password, verify_key,...userData} = userInfo.dataValues;
@@ -250,7 +250,7 @@ router.post('/reset-pw', async(req, res) => {
 
 // jwt 확인
 router.post('/verify', middleware.verifyToken, (req, res) => {
-    return res.json(req.decoded);
+    res.status(200).json({});
 });
 
 export default router;
