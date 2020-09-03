@@ -5,6 +5,7 @@ import burger from "./routes/burger";
 import burgerToday from "./routes/burger_today";
 import brand from "./routes/brand";
 import review from "./routes/review";
+import filter from "./routes/filter";
 import models from "./models";
 import db from "./library/db";
 
@@ -22,6 +23,7 @@ app.use("/burger", burger);
 app.use("/burger_today", burgerToday);
 app.use("/brand", brand);
 app.use("/review", review);
+app.use("/filter", filter);
 
 // env 설정
 dotenv.config();
