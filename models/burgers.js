@@ -84,10 +84,8 @@ module.exports = function (sequelize, DataTypes) {
   );
 
   burgers.associate = (models) => {
-    burgers.belongsTo(models.Brand, {
-      foreignKey: "brand_id",
-    });
-    burgers.hasMany(models.Review);
+    burgers.belongsTo(models.Brand, {foreignKey: "brand_id"});
+    burgers.hasMany(models.Review, {as: 'Review'});
     burgers.hasMany(models.BIngredient);
     burgers.hasMany(models.TBurger);
     burgers.addScope("burgersToday", {
