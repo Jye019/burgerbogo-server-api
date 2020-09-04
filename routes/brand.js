@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
 // 브랜드 조회
 router.get("/", async (req, res) => {
   try {
-    const parsed = parseQueryString(res, req.query);
+    const parsed = parseQueryString(res, req.query, Brand);
     const result = await Brand.findAll(parsed);
     res.status(200).json({ data: result });
   } catch (err) {
@@ -34,7 +34,7 @@ router.put("/", async (req, res) => {
     if (await Brand.findOne({ where: { id: req.body.id } })) {
       await Brand.update(req.body.data, { where: { id: req.body.id } });
       res.status(200).json({});
-    } else res.status(406).json({ code: "BRAND_INVALID_ID" });
+    } else res.status(400).json({ code: "BRAND_INVALID_ID" });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
@@ -45,7 +45,7 @@ router.delete("/", async (req, res) => {
     if (await Brand.findOne({ where: { id: req.body.id } })) {
       await Brand.destroy({ where: { id: req.body.id } });
       res.status(200).json({});
-    } else res.status(406).json({ code: "BRAND_INVALID_ID" });
+    } else res.status(400).json({ code: "BRAND_INVALID_ID" });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }

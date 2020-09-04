@@ -45,7 +45,7 @@ router.post("/today", async (req, res) => {
       await TBurger.create(req.body);
       res.status(200).json({});
     } else {
-      res.status(406).json({ code: "BURGER_INVALID_ID" });
+      res.status(400).json({ code: "BURGER_INVALID_ID" });
     }
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
@@ -75,7 +75,7 @@ router.delete("/today", async (req, res) => {
     if (await TBurger.findOne({ where: { id: req.body.id } })) {
       await TBurger.destroy({ where: { id: req.body.id } });
       res.status(200).json({});
-    } else res.status(406).json({ code: "BURGER_TODAY_INVALID_ID" });
+    } else res.status(400).json({ code: "BURGER_TODAY_INVALID_ID" });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
@@ -104,7 +104,7 @@ router.post("/", async (req, res) => {
       await Burger.create(req.body);
       res.status(200).json({});
     } else {
-      res.status(406).json({ code: "BRAND_INVALID_ID" });
+      res.status(400).json({ code: "BRAND_INVALID_ID" });
     }
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
@@ -131,7 +131,7 @@ router.put("/", async (req, res) => {
     if (await Burger.findOne({ where: { id: req.body.id } })) {
       await Burger.update(req.body.data, { where: { id: req.body.id } });
       res.status(200).json({});
-    } else res.status(406).json({ code: "BURGER_INVALID_ID" });
+    } else res.status(400).json({ code: "BURGER_INVALID_ID" });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
@@ -143,7 +143,7 @@ router.delete("/", async (req, res) => {
     if (await Burger.findOne({ where: { id: req.body.id } })) {
       await Burger.destroy({ where: { id: req.body.id } });
       res.status(200).json({});
-    } else res.status(406).json({ code: "BURGER_INVALID_ID" });
+    } else res.status(400).json({ code: "BURGER_INVALID_ID" });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }

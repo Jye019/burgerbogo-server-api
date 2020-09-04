@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
 // 리뷰 조회
 router.get("/", async (req, res) => {
   try {
-    const parsed = parseQueryString(res, req.query, {
+    const parsed = parseQueryString(res, req.query, Review, {
       Burger,
       User,
     });
@@ -52,7 +52,7 @@ router.put("/", async (req, res) => {
     if (await Review.findOne({ where: { id: req.body.id } })) {
       await Review.update(req.body.data, { where: { id: req.body.id } });
       res.status(200).json({});
-    } else res.status(406).json({ code: "REVIEW_INVALID_ID" });
+    } else res.status(400).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
@@ -64,7 +64,7 @@ router.delete("/", async (req, res) => {
     if (await Review.findOne({ where: { id: req.body.id } })) {
       await Review.destroy({ where: { id: req.body.id } });
       res.status(200).json({});
-    } else res.status(406).json({ code: "REVIEW_INVALID_ID" });
+    } else res.status(400).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
