@@ -19,7 +19,7 @@ router.get('/', async(req, res) => {
                          FROM burgers AS burger
                          INNER JOIN brands AS brand 
                          ON brand.id = burger.brand_id
-                         INNER JOIN (
+                         LEFT JOIN (
                              SELECT ROUND(AVG(SCORE), 1) AS score,
                                     COUNT(burger_id) AS score_cnt,
                                     burger_id 
