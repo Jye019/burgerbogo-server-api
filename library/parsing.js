@@ -83,8 +83,10 @@ const parseQueryString = (res, _query, curModel, incModels) => {
             if (!e.attributes) e.attributes = []; // 초기화
             e.attributes.push(split[1]); // 찾은 include의 attributes에 항목 추가
           }
+          return null;
         });
       }
+      return null;
     });
   }
   /* -------------------------*/
