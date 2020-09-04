@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
 // 브랜드 조회
 router.get("/", async (req, res) => {
   try {
-    const parsed = parseQueryString(req.query);
+    const parsed = parseQueryString(res, req.query);
     const result = await Brand.findAll(parsed);
     res.status(200).json({ data: result });
   } catch (err) {

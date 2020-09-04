@@ -40,6 +40,8 @@ Object.keys(db).forEach((modelName) => {
   }
 });
 
+db.getSchema = function () {};
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 

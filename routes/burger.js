@@ -3,7 +3,7 @@ import path from "path";
 import aws from "aws-sdk";
 import multer from "multer";
 import multerS3 from "multer-s3";
-import seq, { Op } from "sequelize";
+import { Op } from "sequelize";
 import { Burger, TBurger, Brand, Review } from "../models";
 import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
@@ -114,24 +114,14 @@ router.post("/", async (req, res) => {
 // 버거 조회
 router.get("/", async (req, res) => {
   try {
-    const parsed = parseQueryString(req.query, {
+    const parsed = parseQueryString(res, req.query, Burger, {
       Brand,
       Review,
     });
     const result = await Burger.findAll(parsed);
-    res.status(200).json({ data: result });
+    return res.status(200).json({ data: result });
   } catch (err) {
-    if (err instanceof seq.ValidationError) {
-      res
-        .status(401)
-        .json({ code: "SEQUELIZE_VALIDATION_ERROR", err: err.stack });
-    } else if (err instanceof seq.DatabaseError) {
-      res
-        .status(401)
-        .json({ code: "SEQUELIZE_DATABASE_ERROR", err: err.stack });
-    } else {
-      res.status(500).json({ code: "ERROR", error: err.stack });
-    }
+    return res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
 
