@@ -2,6 +2,9 @@ import express from "express";
 import seq from "sequelize";
 import { Brand } from "../models";
 import { parseQueryString } from "../library/parsing";
+import middleware from "./middleware";
+
+const { verifyToken, isManager } = middleware;
 
 const router = express.Router();
 
@@ -9,7 +12,7 @@ router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
 // 브랜드 작성
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, isManager, async (req, res) => {
   try {
     await Brand.create(req.body);
     res.status(200).json({});

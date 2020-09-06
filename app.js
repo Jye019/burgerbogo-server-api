@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import auth from "./routes/auth";
 import burger from "./routes/burger";
 import brand from "./routes/brand";
@@ -17,6 +18,7 @@ const app = express();
 // 바디 파싱 미들웨어
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors());
 
 app.use("/auth", auth);
 app.use("/burger", burger);

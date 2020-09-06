@@ -2,6 +2,9 @@ import express from "express";
 import seq from "sequelize";
 import { Review, Burger, User } from "../models";
 import { parseQueryString } from "../library/parsing";
+import middleware from "./middleware";
+
+const { verifyToken } = middleware;
 
 const router = express.Router();
 
@@ -9,7 +12,7 @@ router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
 // 리뷰 추가
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
   try {
     await Review.create(req.body);
     res.status(200).json({});

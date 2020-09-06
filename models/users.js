@@ -18,10 +18,9 @@ module.exports = function (sequelize, DataTypes) {
         type: "YEAR",
         allowNull: true,
       },
-      is_admin: {
-        type: DataTypes.INTEGER(1),
+      user_level: {
+        type: DataTypes.INTEGER,
         allowNull: true,
-        defaultValue: 0,
       },
       nickname: {
         type: DataTypes.STRING(20),
