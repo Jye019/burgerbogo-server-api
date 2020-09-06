@@ -34,6 +34,10 @@ router.get("/", async (req, res) => {
       Burger,
       User,
     });
+    if (parsed.error)
+      return res
+        .status(406)
+        .json({ code: parsed.code, message: parsed.message });
     const result = await Review.findAll(parsed);
     res.status(200).json({ data: result });
   } catch (err) {

@@ -30,6 +30,10 @@ router.post("/", verifyToken, isAdmin, async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const parsed = parseQueryString(res, req.query, Ingredient);
+    if (parsed.error)
+      return res
+        .status(406)
+        .json({ code: parsed.code, message: parsed.message });
     const result = await Ingredient.findAll(parsed);
     res.status(200).json({ data: result });
   } catch (err) {
@@ -92,11 +96,15 @@ router.post("/burger", verifyToken, isAdmin, async (req, res) => {
 
 router.get("/burger", async (req, res) => {
   try {
-    const { where, attributes, include } = parseQueryString(res, req.query, {
+    const parsed = parseQueryString(res, req.query, {
       Burger,
       Ingredient,
     });
-    const result = await BIngredient.findAll({ where, attributes, include });
+    if (parsed.error)
+      return res
+        .status(406)
+        .json({ code: parsed.code, message: parsed.message });
+    const result = await BIngredient.findAll(parsed);
     if (result) res.status(200).json({ data: result });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });

@@ -31,6 +31,10 @@ router.post("/", verifyToken, isAdmin, async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const parsed = parseQueryString(res, req.query, Brand);
+    if (parsed.error)
+      return res
+        .status(406)
+        .json({ code: parsed.code, message: parsed.message });
     const result = await Brand.findAll(parsed);
     res.status(200).json({ data: result });
   } catch (err) {

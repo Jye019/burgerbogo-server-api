@@ -133,6 +133,10 @@ router.get("/", async (req, res) => {
       Brand,
       Review,
     });
+    if (parsed.error)
+      return res
+        .status(406)
+        .json({ code: parsed.code, message: parsed.message });
     const result = await Burger.findAll(parsed);
     return res.status(200).json({ data: result });
   } catch (err) {
