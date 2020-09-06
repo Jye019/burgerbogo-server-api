@@ -45,7 +45,7 @@ exports.verifyToken = (req, res, next) => {
         }
         if (decoded) {
           console.log(decoded);
-          req.decoded = decoded;
+          req.atoken = decoded;
           next();
         }
       }
@@ -126,24 +126,24 @@ exports.sendEmail = async (req, res, emailType) => {
 // 유저레벨 검증
 // 매니아 인지
 exports.isMania = (req, res, next) => {
-  if (!(req.decoded.user_level === 100 || req.docoded.user_level === 10000)) {
-    return res.status(401).json({ code: "AT_LEAST_MANIA" });
+  if (!(req.atoken.user_level === 100 || req.atoken.user_level === 10000)) {
+    return res.status(401).json({ code: "AUTH_AT_LEAST_MANIA" });
   }
   next();
 };
 
 // 사장 인지
 exports.isDirector = (req, res, next) => {
-  if (!(req.decoded.user_level === 1000 || req.docoded.user_level === 10000)) {
-    return res.status(401).json({ code: "ONLY_DIRECTOR" });
+  if (!(req.atoken.user_level === 1000 || req.atoken.user_level === 10000)) {
+    return res.status(401).json({ code: "AUTH_ONLY_DIRECTOR" });
   }
   next();
 };
 
 // 관리자 인지
 exports.isAdmin = (req, res, next) => {
-  if (!(req.decoded.user_level === 10000)) {
-    return res.status(401).json({ code: "ONLY_ADMIN" });
+  if (!(req.atoken.user_level === 10000)) {
+    return res.status(401).json({ code: "AUTH_ONLY_ADMIN" });
   }
   next();
 };

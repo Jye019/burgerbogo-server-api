@@ -59,9 +59,17 @@ router.get("/recent/:limit", async (req, res) => {
 // 리뷰 수정
 router.put("/", verifyToken, async (req, res) => {
   try {
-    if (await Review.findOne({ where: { id: req.body.id } })) {
-      await Review.update(req.body.data, { where: { id: req.body.id } });
-      res.status(200).json({});
+    const current = await Review.findOne({ where: { id: req.body.id } });
+    if (current) {
+      if (
+        current.user_id === req.atoken.id ||
+        req.atoken.user_level === 10000
+      ) {
+        await Review.update(req.body.data, { where: { id: req.body.id } });
+        res.status(200).json({});
+      } else {
+        res.status(401).json({ code: "REVIEW_WRONG_USER" });
+      }
     } else res.status(400).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
     if (err instanceof seq.ValidationError) {
@@ -77,9 +85,17 @@ router.put("/", verifyToken, async (req, res) => {
 // 리뷰 삭제
 router.delete("/", verifyToken, async (req, res) => {
   try {
-    if (await Review.findOne({ where: { id: req.body.id } })) {
-      await Review.destroy({ where: { id: req.body.id } });
-      res.status(200).json({});
+    const current = await Review.findOne({ where: { id: req.body.id } });
+    if (current) {
+      if (
+        current.user_id === req.atoken.id ||
+        req.atoken.user_level === 10000
+      ) {
+        await Review.destroy({ where: { id: req.body.id } });
+        res.status(200).json({});
+      } else {
+        res.status(401).json({ code: "REVIEW_WRONG_USER" });
+      }
     } else res.status(400).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
