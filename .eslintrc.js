@@ -12,5 +12,7 @@ module.exports = {
     "no-console": "off",
     "no-underscore-dangle": "off",
     "import/prefer-default-export": "off",
+    "dot-notation": "off",
+    "consistent-return": "off",
   },
 };

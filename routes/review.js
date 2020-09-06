@@ -1,4 +1,5 @@
 import express from "express";
+import seq from "sequelize";
 import { Review, Burger, User } from "../models";
 import { parseQueryString } from "../library/parsing";
 
@@ -13,6 +14,12 @@ router.post("/", async (req, res) => {
     await Review.create(req.body);
     res.status(200).json({});
   } catch (err) {
+    if (err instanceof seq.ValidationError) {
+      return res.status(400).json({
+        code: "SEQUELIZE_VALIDATION_ERROR",
+        message: err["errors"][0]["message"],
+      });
+    }
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -54,6 +61,12 @@ router.put("/", async (req, res) => {
       res.status(200).json({});
     } else res.status(400).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
+    if (err instanceof seq.ValidationError) {
+      return res.status(400).json({
+        code: "SEQUELIZE_VALIDATION_ERROR",
+        message: err["errors"][0]["message"],
+      });
+    }
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });

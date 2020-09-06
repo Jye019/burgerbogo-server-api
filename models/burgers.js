@@ -13,6 +13,9 @@ module.exports = function (sequelize, DataTypes) {
       brand_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        validate: {
+          isInt: true,
+        },
       },
       name: {
         type: DataTypes.STRING(45),
@@ -25,18 +28,30 @@ module.exports = function (sequelize, DataTypes) {
       price_single: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
       price_set: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
       price_combo: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
       calorie: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
       image: {
         type: DataTypes.STRING(200),
@@ -49,22 +64,37 @@ module.exports = function (sequelize, DataTypes) {
       weight: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
       protein: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
       natrium: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
       sugar: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
       saturated_fat: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        validate: {
+          isInt: true,
+        },
       },
     },
     {

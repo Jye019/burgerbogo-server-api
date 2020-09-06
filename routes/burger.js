@@ -3,7 +3,7 @@ import path from "path";
 import aws from "aws-sdk";
 import multer from "multer";
 import multerS3 from "multer-s3";
-import { Op } from "sequelize";
+import seq, { Op } from "sequelize";
 import { Burger, TBurger, Brand, Review } from "../models";
 import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
@@ -48,6 +48,12 @@ router.post("/today", async (req, res) => {
       res.status(400).json({ code: "BURGER_INVALID_ID" });
     }
   } catch (err) {
+    if (err instanceof seq.ValidationError) {
+      return res.status(400).json({
+        code: "SEQUELIZE_VALIDATION_ERROR",
+        message: err["errors"][0]["message"],
+      });
+    }
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -107,7 +113,13 @@ router.post("/", async (req, res) => {
       res.status(400).json({ code: "BRAND_INVALID_ID" });
     }
   } catch (err) {
-    res.status(500).json({ code: "ERROR", error: err.stack });
+    if (err instanceof seq.ValidationError) {
+      return res.status(400).json({
+        code: "SEQUELIZE_VALIDATION_ERROR",
+        message: err["errors"][0]["message"],
+      });
+    }
+    res.status(500).json({ code: "ERROR", error: err });
   }
 });
 
@@ -133,6 +145,12 @@ router.put("/", async (req, res) => {
       res.status(200).json({});
     } else res.status(400).json({ code: "BURGER_INVALID_ID" });
   } catch (err) {
+    if (err instanceof seq.ValidationError) {
+      return res.status(400).json({
+        code: "SEQUELIZE_VALIDATION_ERROR",
+        message: err["errors"][0]["message"],
+      });
+    }
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
