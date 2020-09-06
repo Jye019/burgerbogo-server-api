@@ -141,9 +141,9 @@ exports.isDirector = (req, res, next) => {
 };
 
 // 관리자 인지
-exports.isManager = (req, res, next) => {
+exports.isAdmin = (req, res, next) => {
   if (!(req.decoded.user_level === 10000)) {
-    return res.status(401).json({ code: "ONLY_MANAGER" });
+    return res.status(401).json({ code: "ONLY_ADMIN" });
   }
   next();
 };

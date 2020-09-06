@@ -2,6 +2,9 @@ import express from "express";
 import seq from "sequelize";
 import { Ingredient, BIngredient, Burger } from "../models";
 import { parseQueryString } from "../library/parsing";
+import middleware from "./middleware";
+
+const { verifyToken, isAdmin } = middleware;
 
 const router = express.Router();
 
@@ -9,7 +12,7 @@ router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
 /*       재료       */
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, isAdmin, async (req, res) => {
   try {
     await Ingredient.create(req.body);
     res.status(200).json({});
@@ -34,7 +37,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.put("/", async (req, res) => {
+router.put("/", verifyToken, isAdmin, async (req, res) => {
   try {
     if (await Ingredient.findOne({ where: { id: req.body.id } })) {
       await Ingredient.update(req.body.data, { where: { id: req.body.id } });
@@ -51,7 +54,7 @@ router.put("/", async (req, res) => {
   }
 });
 
-router.delete("/", async (req, res) => {
+router.delete("/", verifyToken, isAdmin, async (req, res) => {
   try {
     if (await Ingredient.findOne({ where: { id: req.body.id } })) {
       await Ingredient.destroy({ where: { id: req.body.id } });
@@ -64,7 +67,7 @@ router.delete("/", async (req, res) => {
 /* ------------------ */
 
 /*    버거와 연결     */
-router.post("/burger", async (req, res) => {
+router.post("/burger", verifyToken, isAdmin, async (req, res) => {
   try {
     if (!(await Burger.findOne({ where: { id: req.body.burger_id } }))) {
       return res.status(400).json({ code: "BURGER_INVALID_ID" });
@@ -100,7 +103,7 @@ router.get("/burger", async (req, res) => {
   }
 });
 
-router.put("/burger", async (req, res) => {
+router.put("/burger", verifyToken, isAdmin, async (req, res) => {
   try {
     if (await BIngredient.findOne({ where: { id: req.body.id } })) {
       await BIngredient.update(req.body.data, { where: { id: req.body.id } });
@@ -117,7 +120,7 @@ router.put("/burger", async (req, res) => {
   }
 });
 
-router.delete("/burger", async (req, res) => {
+router.delete("/burger", verifyToken, isAdmin, async (req, res) => {
   try {
     if (await BIngredient.findOne({ where: { id: req.body.id } })) {
       await BIngredient.destroy({ where: { id: req.body.id } });

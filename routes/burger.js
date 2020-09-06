@@ -7,6 +7,9 @@ import seq, { Op } from "sequelize";
 import { Burger, TBurger, Brand, Review } from "../models";
 import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
+import middleware from "./middleware";
+
+const { verifyToken, isAdmin, isDirector } = middleware;
 
 // 사진 Upload 설정 부분
 aws.config.accessKeyId = awscon.accessKeyId;
@@ -35,7 +38,7 @@ router.use(express.urlencoded({ extended: false }));
 
 /*                오늘의 버거 Start               */
 // 오늘의버거 입력
-router.post("/today", async (req, res) => {
+router.post("/today", verifyToken, isAdmin, async (req, res) => {
   try {
     if (
       await Burger.findOne({
@@ -76,7 +79,7 @@ router.get("/today", async (req, res) => {
   }
 });
 // 오늘의버거 삭제
-router.delete("/today", async (req, res) => {
+router.delete("/today", verifyToken, isAdmin, async (req, res) => {
   try {
     if (await TBurger.findOne({ where: { id: req.body.id } })) {
       await TBurger.destroy({ where: { id: req.body.id } });
@@ -90,7 +93,7 @@ router.delete("/today", async (req, res) => {
 
 /*                버거 Start                    */
 // 버거 이미지 등록
-router.post("/image", (req, res) => {
+router.post("/image", verifyToken, isDirector, (req, res) => {
   upload.single("image")(req, res, (err) => {
     if (err) {
       return res.status(500).json({ code: "BURGER_IMAGE_UPLOAD" });
@@ -100,7 +103,7 @@ router.post("/image", (req, res) => {
 });
 
 // 버거 등록
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, isDirector, async (req, res) => {
   try {
     if (
       await Brand.findOne({
@@ -138,7 +141,7 @@ router.get("/", async (req, res) => {
 });
 
 // 버거 수정
-router.put("/", async (req, res) => {
+router.put("/", verifyToken, isDirector, async (req, res) => {
   try {
     if (await Burger.findOne({ where: { id: req.body.id } })) {
       await Burger.update(req.body.data, { where: { id: req.body.id } });
@@ -156,7 +159,7 @@ router.put("/", async (req, res) => {
 });
 
 // 버거 삭제
-router.delete("/", async (req, res) => {
+router.delete("/", verifyToken, isDirector, async (req, res) => {
   try {
     if (await Burger.findOne({ where: { id: req.body.id } })) {
       await Burger.destroy({ where: { id: req.body.id } });

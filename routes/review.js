@@ -57,7 +57,7 @@ router.get("/recent/:limit", async (req, res) => {
 });
 
 // 리뷰 수정
-router.put("/", async (req, res) => {
+router.put("/", verifyToken, async (req, res) => {
   try {
     if (await Review.findOne({ where: { id: req.body.id } })) {
       await Review.update(req.body.data, { where: { id: req.body.id } });
@@ -75,7 +75,7 @@ router.put("/", async (req, res) => {
 });
 
 // 리뷰 삭제
-router.delete("/", async (req, res) => {
+router.delete("/", verifyToken, async (req, res) => {
   try {
     if (await Review.findOne({ where: { id: req.body.id } })) {
       await Review.destroy({ where: { id: req.body.id } });
