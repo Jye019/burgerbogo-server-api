@@ -12,7 +12,7 @@ module.exports = function (sequelize, DataTypes) {
       },
       password: {
         type: DataTypes.STRING(80),
-        allowNull: true,
+        allowNull: false,
       },
       birth_year: {
         type: "YEAR",
@@ -20,7 +20,8 @@ module.exports = function (sequelize, DataTypes) {
       },
       user_level: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
+        defaultValue: 10,
       },
       nickname: {
         type: DataTypes.STRING(20),
@@ -36,7 +37,7 @@ module.exports = function (sequelize, DataTypes) {
         defaultValue: 0,
       },
       verify_key: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(100),
         allowNull: true,
       },
       gender: {

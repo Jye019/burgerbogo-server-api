@@ -96,7 +96,7 @@ router.post("/burger", verifyToken, isAdmin, async (req, res) => {
 
 router.get("/burger", async (req, res) => {
   try {
-    const parsed = parseQueryString(res, req.query, {
+    const parsed = parseQueryString(res, req.query, BIngredient, {
       Burger,
       Ingredient,
     });
