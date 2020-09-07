@@ -4,6 +4,7 @@ import aws from "aws-sdk";
 import multer from "multer";
 import multerS3 from "multer-s3";
 import seq, { Op } from "sequelize";
+import xlsx from "xlsx";
 import { Burger, TBurger, Brand, Review } from "../models";
 import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
@@ -18,17 +19,31 @@ aws.config.region = awscon.region;
 
 const s3 = new aws.S3();
 
+// 버거 이미지 업로드 부분
 const upload = multer({
   storage: multerS3({
     s3,
     bucket: awscon.bucket,
     key: (req, file, cb) => {
       const extension = path.extname(file.originalname);
+      req.test = "23213"; // ★★★★★
       cb(null, `${Date.now().toString()}${extension}`);
     },
     acl: "public-read-write",
   }),
 });
+
+// 엑셀 업로드 부분
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/xlsx/burger");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+const uploadXlsx = multer({ storage });
+
 //
 
 const router = express.Router();
@@ -98,6 +113,7 @@ router.post("/image", verifyToken, isDirector, (req, res) => {
     if (err) {
       return res.status(500).json({ code: "BURGER_IMAGE_UPLOAD" });
     }
+    console.log(req.test); // ★★★★★
     return res.status(200).json({ path: req.file.location });
   });
 });
@@ -174,5 +190,33 @@ router.delete("/", verifyToken, isDirector, async (req, res) => {
   }
 });
 /*                버거 End                    */
+
+// 엑셀로 입력
+router.post("/xlsx" /* , verifyToken, isDirector */, async (req, res) => {
+  uploadXlsx.single("xlsx")(req, res, async (err) => {
+    try {
+      if (err) {
+        return res
+          .status(500)
+          .json({ code: "BURGER_XLSX_UPLOAD", message: err });
+      }
+      const workbook = xlsx.readFile(
+        `./uploads/xlsx/burger/${req.file.originalname}`
+      );
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const parsed = xlsx.utils.sheet_to_json(worksheet);
+      const result = await Burger.bulkCreate(parsed /* , { validate: true } */);
+      if (result) return res.status(200).json({});
+    } catch (err2) {
+      if (err2 instanceof seq.ForeignKeyConstraintError) {
+        return res.status(400).json({
+          code: "SEQUELIZE_WRONG_FOREIGN_KEY",
+          message: err2["fields"][0],
+        });
+      }
+      return res.status(500).json({ code: "ERROR", message: err2 });
+    }
+  });
+});
 
 export default router;
