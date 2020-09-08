@@ -1,5 +1,6 @@
 import express from "express";
 import bcrypt from 'bcrypt';
+import crypto from "crypto";
 import jwt from 'jsonwebtoken';
 import sequelize from "sequelize";
 import { User } from '../models';
@@ -140,18 +141,28 @@ router.post('/login', async (req, res) => {
             if(await bcrypt.compare(req.body.password, userInfo.password)) {
                 if(userInfo.verified === 1) {
                     // 세션 발급 
-                    const token = jwt.sign({ id: userInfo.id, nickname: userInfo.nickname, user_level: userInfo.user_level}, 
+                    const key1 = crypto.randomBytes(256).toString("hex").substring(79, 51);
+                    const key2 = crypto.randomBytes(256).toString("base64").substring(51, 79);
+                    const key = encodeURIComponent(key1 + key2);
+                    const accessToken = jwt.sign({id: userInfo.id, nickname: userInfo.nickname, user_level: userInfo.user_level}, 
                                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
                                            { expiresIn: '30m', issuer: 'nsm',});
-                    // cookie에 저장
-                    // res.cookie('token', token, { httpOnly: true, maxAge: 1000 * 60 * 30});
-                  
+                    const refreshToken = jwt.sign({refreshkey: key}, 
+                                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
+                                            { expiresIn: '14d', issuer: 'nsm',});
+                    await User.update({refresh_key: key}, {
+                        where: {
+                            id: userInfo.id
+                        }
+                    });
+
                     // return userData
                     const {password, verify_key,...userData} = userInfo.dataValues;
                     return res.status(200).json({
                         data: {
                             "userData": userData,
-                            token
+                            accessToken,
+                            refreshToken
                         }
                     });
                 }  

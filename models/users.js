@@ -40,6 +40,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING(100),
         allowNull: true,
       },
+      refresh_key: {
+        type: DataTypes.STRING(40),
+        allowNull: true,
+      },
       gender: {
         type: DataTypes.INTEGER(1),
         allowNull: true,
