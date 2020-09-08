@@ -18,12 +18,18 @@ router.get('/', async(req, res) => {
                                 burger.name as name, 
                                 brand.name as brand_name
                         FROM burgers AS burger
-                        LEFT JOIN (SELECT burger_id, id FROM burgers_have_ingredients WHERE ingredient_id IN (${(allergy.length===0)? 0 : allergy})) bi
+                        LEFT JOIN (
+                            SELECT burger_id, 
+                                   id 
+                            FROM burgers_have_ingredients 
+                            WHERE ingredient_id IN (${(allergy.length===0)? 0 : allergy}) ) bi
                         ON burger.id = bi.burger_id 
-                        ${(main.length===0)? `LEFT` : `RIGHT`} JOIN (SELECT burger_id, id FROM burgers_have_ingredients WHERE ingredient_id IN (${(main.length===0)? 0 : main})) bi2 
+                        ${(main.length===0)? `LEFT` : `RIGHT`} JOIN (
+                            SELECT burger_id, 
+                                   id 
+                            FROM burgers_have_ingredients 
+                            WHERE ingredient_id IN (${(main.length===0)? 0 : main}) ) bi2 
                         ON burger.id = bi2.burger_id
-                        INNER JOIN brands AS brand 
-                        ON burger.brand_id = brand.id 
                         LEFT JOIN (
                             SELECT ROUND(AVG(SCORE), 1) AS score,
                                     COUNT(burger_id) AS score_cnt,
@@ -31,8 +37,10 @@ router.get('/', async(req, res) => {
                             FROM reviews 
                             GROUP BY burger_id) AS review 
                         ON review.burger_id=burger.id
-                        WHERE COALESCE(score_cnt, 0) >= ${(order==='score')? 3: 0}
-                        AND bi.id IS NULL
+                        INNER JOIN brands AS brand 
+                        ON burger.brand_id = brand.id 
+                        WHERE bi.id IS NULL
+                        AND COALESCE(score_cnt, 0) >= ${(order==='score')? 3: 0}
                         ORDER BY ${order} ${(order==='name' || order==='calorie')? 'ASC' : 'DESC'}`,
                         { 
                             type: QueryTypes.SELECT,
