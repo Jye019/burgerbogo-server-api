@@ -17,9 +17,9 @@ router.get('/', async(req, res) => {
                                 burger.name as name, 
                                 brand.name as brand_name
                         FROM burgers AS burger
-                        LEFT JOIN (SELECT burger_id, id FROM burgers_have_ingredients WHERE ingredient_id IN (${req.body.allergy})) bi
+                        LEFT JOIN (SELECT burger_id, id FROM burgers_have_ingredients WHERE ingredient_id IN (${req.body.allergy || 0})) bi
                         ON burger.id = bi.burger_id 
-                        INNER JOIN (SELECT burger_id, id FROM burgers_have_ingredients WHERE ingredient_id IN (${req.body.main})) bi2 
+                        ${(req.body.main)? `RIGHT`: `LEFT`} JOIN (SELECT burger_id, id FROM burgers_have_ingredients WHERE ingredient_id IN (${req.body.main || 0})) bi2 
                         ON burger.id = bi2.burger_id
                         INNER JOIN brands AS brand 
                         ON brand.id = burger.brand_id
