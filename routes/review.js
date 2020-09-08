@@ -106,4 +106,11 @@ router.delete("/", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/test", async (req, res) => {
+  const result = await Review.findAll({
+    where: { burger_id: 1 },
+    include: [{ model: User }],
+  });
+  res.json(result);
+});
 export default router;

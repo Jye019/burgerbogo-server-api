@@ -14,5 +14,6 @@ module.exports = {
     "import/prefer-default-export": "off",
     "dot-notation": "off",
     "consistent-return": "off",
+    "prefer-destructuring": "off",
   },
 };
