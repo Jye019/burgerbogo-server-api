@@ -149,10 +149,11 @@ router.post('/login', async (req, res) => {
                                            { expiresIn: '30m', issuer: 'nsm',});
                     const refreshToken = jwt.sign({refreshkey: key}, 
                                             ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                                            { expiresIn: '14d', issuer: 'nsm',});
+                                            { expiresIn: '10m', issuer: 'nsm',});
+                    
                     await User.update({refresh_key: key}, {
                         where: {
-                            id: userInfo.id
+                            email: userInfo.email
                         }
                     });
 
@@ -258,10 +259,11 @@ router.post('/reset-pw', async(req, res) => {
     }
 });
 
+// accessToken 확인
+router.post('/verify', middleware.verifyToken, (req, res) => {return res.status(200).json({})});
 
-// jwt 확인
-router.post('/verify', middleware.verifyToken, (req, res) => {
-    res.status(200).json({});
-});
+// accessToken 갱신
+router.post('/renew', middleware.renewToken);
+
 
 export default router;

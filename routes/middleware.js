@@ -58,9 +58,9 @@ exports.verifyToken = (req, res, next) => {
  * 유요한 경우 access Token 재발급
  * 만료된 경우 로그인 페이지로 이동
 */
-exports.renewToken = async (req, res) => {
+exports.renewToken = (req, res) => {
   try {
-    jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", (err, decoded) => {
+    jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", async (err) => {
       if (err) {
         if (err.name === 'JsonWebTokenError') {
           return res.status(401).json({
@@ -68,19 +68,35 @@ exports.renewToken = async (req, res) => {
             message: "AUTH_INVALID_TOKEN",
           });
         }
+
+        // access token 재발급 또는 로그인 창으로 이동 
+        if(err.name === 'TokenExpiredError'){
+          const accessTokenJSON = jwt.decode(req.headers.authorization)
+          const refreshTokenJSON = jwt.decode(req.body.refreshToken)
+          const userInfo = await User.findOne({
+            where: {id: accessTokenJSON.id}
+          });
+
+          if(refreshTokenJSON.refreshkey === userInfo.refresh_key && Date.now() <= refreshTokenJSON.exp * 1000) {
+            const accessToken = jwt.sign({id: userInfo.id, nickname: userInfo.nickname, user_level: userInfo.user_level}, 
+                                        ( process.env.JWT_SECRET || 'xu5q!p1' ),
+                                        { expiresIn: '2m', issuer: 'nsm',});
+            // return userData
+            const {password, verify_key,...userData} = userInfo.dataValues;
+            return res.status(200).json({
+                data: {
+                    "userData": userData,
+                    accessToken,
+                }
+            });
+          }
+          
+          return res.status(401).json({
+            message: "로그인 페이지로 리다이렉트 예정"
+          });
+        }
       }
-
-      // access token 재발급 또는 로그인 창으로 이동 
-      const refreshTokenJSON = jwt.decode(req.body.refreshToken)
-      const user = User.findOne({
-        where: {id: decoded.id}
-      });
-
-      if(refreshTokenJSON.refreshkey === user.refresh_key && Date.now() >= refreshTokenJSON.exp * 1000) {
-        console.log("재발급")
-      } 
-      console.log("로그인창")
-  });
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({
@@ -96,9 +112,7 @@ exports.sendEmail = async (req, res, emailType) => {
     const key1 = crypto.randomBytes(256).toString("hex").substring(99, 51);
     const key2 = crypto.randomBytes(256).toString("base64").substring(51, 99);
     const verifyKey = encodeURIComponent(key1 + key2);
-    const verifyLink = `http://${req.get(
-      "host"
-    )}/auth/confirmEmail?key=${verifyKey}`;
+    const verifyLink = `http://${req.get("host")}/auth/confirmEmail?key=${verifyKey}`;
 
     await User.update(
       { verify_key: verifyKey },
