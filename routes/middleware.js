@@ -27,29 +27,25 @@ exports.isNotLoggedIn = (req, res, next) => {
 // 클라이언트로부터 받은 jwt 검증
 exports.verifyToken = (req, res, next) => {
   try {
-    jwt.verify(
-      req.headers.authorization,
-      process.env.JWT_SECRET || "xu5q!p1",
-      (err, decoded) => {
-        if (err) {
-          if (err.name === "TokenExpriedError") {
-            return res.status(401).json({
-              code: 401,
-              message: "AUTH_EXPIRED",
-            });
-          }
+    jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", (err, decoded) => {
+      if (err) {
+        console.log(err)
+        if (err.name === "TokenExpiredError") {
+          return res.status(401).json({
+            code: 401,
+            message: "AUTH_EXPIRED",
+          });
+        }
+        if (err.name === 'JsonWebTokenError') {
           return res.status(401).json({
             code: 401,
             message: "AUTH_INVALID_TOKEN",
           });
-        }
-        if (decoded) {
-          console.log(decoded);
-          req.atoken = decoded;
-          next();
-        }
+        } 
       }
-    );
+      req.atoken = decoded;
+      next();
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({
