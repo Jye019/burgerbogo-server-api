@@ -24,12 +24,11 @@ exports.isNotLoggedIn = (req, res, next) => {
   }
 };
 
-// 클라이언트로부터 받은 jwt 검증
+// access Token 검증
 exports.verifyToken = (req, res, next) => {
   try {
     jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", (err, decoded) => {
       if (err) {
-        console.log(err)
         if (err.name === "TokenExpiredError") {
           return res.status(401).json({
             code: 401,
@@ -54,6 +53,42 @@ exports.verifyToken = (req, res, next) => {
     });
   }
 };
+
+/** refresh Token 검증
+ * 유요한 경우 access Token 재발급
+ * 만료된 경우 로그인 페이지로 이동
+*/
+exports.renewToken = async (req, res) => {
+  try {
+    jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", (err, decoded) => {
+      if (err) {
+        if (err.name === 'JsonWebTokenError') {
+          return res.status(401).json({
+            code: 401,
+            message: "AUTH_INVALID_TOKEN",
+          });
+        }
+      }
+
+      // access token 재발급 또는 로그인 창으로 이동 
+      const refreshTokenJSON = jwt.decode(req.body.refreshToken)
+      const user = User.findOne({
+        where: {id: decoded.id}
+      });
+
+      if(refreshTokenJSON.refreshkey === user.refresh_key && Date.now() >= refreshTokenJSON.exp * 1000) {
+        console.log("재발급")
+      } 
+      console.log("로그인창")
+  });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      code: "ERROR",
+      message: err.stack,
+    });
+  }
+}
 
 // 이메일 전송
 exports.sendEmail = async (req, res, emailType) => {
