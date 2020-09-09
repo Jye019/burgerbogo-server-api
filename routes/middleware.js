@@ -4,41 +4,19 @@ import nodemailer from "nodemailer";
 import crypto from "crypto";
 import { Email, User } from "../models";
 
-// 로그인 상태인지 확인
-exports.isLoggedIn = (req, res, next) => {
-  if (req.isAuthoricated()) {
-    next();
-  } else {
-    res.status(403).send({
-      message: "isNotLoggedIn",
-    });
-  }
-};
-
-// 로그인 안된 상태인지 확인
-exports.isNotLoggedIn = (req, res, next) => {
-  if (!req.isAuthoricated()) {
-    next();
-  } else {
-    res.redirect("/");
-  }
-};
-
 // access Token 검증
 exports.verifyToken = (req, res, next) => {
   try {
     jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", (err, decoded) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
-          return res.status(401).json({
-            code: 401,
-            message: "AUTH_EXPIRED",
+          return res.status(419).json({
+            code: "AUTH_ACCESS_EXPIRED",
           });
         }
         if (err.name === 'JsonWebTokenError') {
           return res.status(401).json({
-            code: 401,
-            message: "AUTH_INVALID_TOKEN",
+            code: "AUTH_INVALID_TOKEN",
           });
         } 
       }
@@ -63,9 +41,8 @@ exports.renewToken = (req, res) => {
     jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", async (err) => {
       if (err) {
         if (err.name === 'JsonWebTokenError') {
-          return res.status(401).json({
-            code: 401,
-            message: "AUTH_INVALID_TOKEN",
+          return res.status(419).json({
+            code: "AUTH_INVALID_TOKEN",
           });
         }
 
@@ -91,8 +68,8 @@ exports.renewToken = (req, res) => {
             });
           }
           
-          return res.status(401).json({
-            message: "로그인 페이지로 리다이렉트 예정"
+          return res.status(419).json({
+            code: "AUTH_REFRESH_EXPIRED"
           });
         }
       }
