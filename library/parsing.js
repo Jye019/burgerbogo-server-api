@@ -32,6 +32,7 @@ const parseQueryString = (res, _query, curModel, incModels) => {
     delete query._offset;
   } else offset = null;
 
+  // 나머지 속성(where에 해당) 배열로 만들기(린트경고 왜뜰까)
   if (query) {
     whereObjTmp = query;
     for (const [key, value] of Object.entries(whereObjTmp)) {
@@ -153,7 +154,10 @@ const parseQueryString = (res, _query, curModel, incModels) => {
     offset,
     order,
   });
-  return { include, where, attributes, limit, offset, order };
+
+  // attributes 속성이 null이라도 넘어가면 defaultScope 적용이 안되서 분기처리
+  if (attributes) return { include, where, attributes, limit, offset, order };
+  return { include, where, limit, offset, order };
 };
 
 export { parseQueryString };

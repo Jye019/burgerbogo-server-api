@@ -47,21 +47,16 @@ module.exports = function (sequelize, DataTypes) {
       sequelize,
       tableName: "reviews",
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+      deletedAt: "deleted_at",
       paranoid: true,
       underscored: true,
-      // defaultScope: {
-      //   attributes: {
-      //     exclude: [
-      //       "user_id",
-      //       "burger_id",
-      //       "userId",
-      //       "BurgerId",
-      //       "createdAt",
-      //       "updatedAt",
-      //       "deletedAt",
-      //     ],
-      //   },
-      // },
+      defaultScope: {
+        attributes: {
+          exclude: ["userId", "BurgerId"],
+        },
+      },
     }
   );
 

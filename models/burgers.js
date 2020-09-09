@@ -101,25 +101,22 @@ module.exports = function (sequelize, DataTypes) {
       sequelize,
       tableName: "burgers",
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+      deletedAt: "deleted_at",
       paranoid: true,
       underscored: true,
-      // defaultScope: {
-      //   attributes: {
-      //     exclude: [
-      //       "brand_id",
-      //       "BrandId",
-      //       "createdAt",
-      //       "updatedAt",
-      //       "deletedAt",
-      //     ],
-      //   },
-      // },
+      defaultScope: {
+        attributes: {
+          exclude: ["BrandId"],
+        },
+      },
     }
   );
 
   burgers.associate = (models) => {
-    burgers.belongsTo(models.Brand, {foreignKey: "brand_id"});
-    burgers.hasMany(models.Review, {as: 'Review'});
+    burgers.belongsTo(models.Brand, { foreignKey: "brand_id" });
+    burgers.hasMany(models.Review, { as: "Review" });
     burgers.hasMany(models.BIngredient);
     burgers.hasMany(models.TBurger);
     burgers.addScope("burgersToday", {

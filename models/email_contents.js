@@ -23,6 +23,9 @@ module.exports = function (sequelize, DataTypes) {
       sequelize,
       tableName: "email_contents",
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+      deletedAt: "deleted_at",
       paranoid: true,
       underscored: true,
     }

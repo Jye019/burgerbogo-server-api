@@ -23,8 +23,16 @@ module.exports = function (sequelize, DataTypes) {
       sequelize,
       tableName: "burgers_have_ingredients",
       timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+      deletedAt: "deleted_at",
       paranoid: true,
       underscored: true,
+      defaultScope: {
+        attributes: {
+          exclude: ["BurgerId", "IngredientId"],
+        },
+      },
     }
   );
   burgers_have_ingredients.associate = (models) => {

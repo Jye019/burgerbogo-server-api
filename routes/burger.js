@@ -5,7 +5,7 @@ import multer from "multer";
 import multerS3 from "multer-s3";
 import seq, { Op } from "sequelize";
 import xlsx from "xlsx";
-import { Burger, TBurger, Brand, Review } from "../models";
+import { sequelize, Burger, TBurger, Brand, Review } from "../models";
 import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
 import middleware from "./middleware";
@@ -189,6 +189,24 @@ router.delete("/", verifyToken, isDirector, async (req, res) => {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
+
+// 리뷰 평점평균
+router.get("/score/:id", async (req, res) => {
+  try {
+    const result = await sequelize.query(
+      "SELECT AVG(score) AS score FROM reviews WHERE burger_id=? AND score IS NOT NULL",
+      { type: seq.QueryTypes.SELECT, replacements: [req.params.id] }
+    );
+    res.status(200).json({
+      data: {
+        score: result[0].score,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ code: "ERROR", error: err.stack });
+  }
+});
+
 /*                버거 End                    */
 
 // 엑셀로 입력
