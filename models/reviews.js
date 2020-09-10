@@ -68,7 +68,7 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: "burger_id",
     });
     reviews.addScope("newReview", {
-      order: [["createdAt", "DESC"]],
+      order: [["created_at", "DESC"]],
       attributes: ["id"],
       include: [
         {
