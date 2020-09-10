@@ -110,9 +110,8 @@ router.get('/confirmEmail', async (req, res) => {
                 }
             });
             
-            return res.status(200).json({
-                data: {"userData": {...userInfo.dataValues}}
-            });
+            req.userIfo = {...userInfo.dataValues};
+            res.redirect('/');
         } 
         
         return res.status(401).json({
@@ -126,7 +125,22 @@ router.get('/confirmEmail', async (req, res) => {
         });
     }
     
-})
+});
+
+// 이메일 인증 후 처리
+router.post('/', async (req, res) => {
+    try {
+        return res.status(200).json({
+            data: req.userInfo
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ 
+            code: "ERROR",
+            error: err.stack 
+        }); 
+    }
+});
 
 // 로그인 
 router.post('/login', async (req, res) => {
@@ -161,7 +175,7 @@ router.post('/login', async (req, res) => {
                     const {password, verify_key,...userData} = userInfo.dataValues;
                     return res.status(200).json({
                         data: {
-                            "userData": userData,
+                            userData,
                             accessToken,
                             refreshToken
                         }

@@ -62,7 +62,7 @@ exports.renewToken = (req, res) => {
             const {password, verify_key,...userData} = userInfo.dataValues;
             return res.status(200).json({
                 data: {
-                    "userData": userData,
+                    userData,
                     accessToken,
                 }
             });
