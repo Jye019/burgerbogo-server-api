@@ -197,9 +197,18 @@ router.get("/score/:id", async (req, res) => {
       "SELECT AVG(score) AS score FROM reviews WHERE burger_id=? AND score IS NOT NULL",
       { type: seq.QueryTypes.SELECT, replacements: [req.params.id] }
     );
+    const result2 = await sequelize.query(
+      "SELECT AVG(sweet) AS sweet,AVG(sour) AS sour,AVG(salty) AS salty,AVG(spicy) AS spicy,AVG(greasy) AS greasy FROM reviews WHERE burger_id=? AND sweet IS NOT NULL",
+      { type: seq.QueryTypes.SELECT, replacements: [req.params.id] }
+    );
     res.status(200).json({
       data: {
         score: result[0].score,
+        sweet: result2[0].sweet,
+        sour: result2[0].sour,
+        salty: result2[0].salty,
+        spicy: result2[0].spicy,
+        greasy: result2[0].greasy,
       },
     });
   } catch (err) {
