@@ -110,17 +110,16 @@ router.get('/confirmEmail', async (req, res) => {
                 }
             });
             
-            req.userIfo = {...userInfo.dataValues};
-            res.redirect('/');
+            req.userInfo = {...userInfo.dataValues};
+            return res.redirect('/auth/success');
         } 
+
+        return res.redirect('/auth/fail');
         
-        return res.status(401).json({
-            code: "AUTH_EXPIRED",
-        });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
-            code: "ERROR",
+            code: "ERROR", 
             error: err.stack 
         });
     }
@@ -128,10 +127,16 @@ router.get('/confirmEmail', async (req, res) => {
 });
 
 // 이메일 인증 후 처리
-router.post('/', async (req, res) => {
+router.get('/:result', async (req, res) => {
     try {
-        return res.status(200).json({
-            data: req.userInfo
+        if (req.params.result === 'success') {
+            return res.status(200).json({
+                data: req.userInfo
+            });
+        }
+
+        return res.status(401).json({
+            code: "AUTH_EXPIRED",
         });
     } catch (err) {
         console.error(err);
