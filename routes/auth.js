@@ -111,10 +111,10 @@ router.get('/confirmEmail', async (req, res) => {
             });
             
             req.userInfo = {...userInfo.dataValues};
-            return res.redirect('/auth/success');
+            res.redirect('/auth/success');
         } 
 
-        return res.redirect('/auth/fail');
+        res.redirect('/auth/fail');
         
     } catch (err) {
         console.error(err);
@@ -130,14 +130,10 @@ router.get('/confirmEmail', async (req, res) => {
 router.get('/:result', async (req, res) => {
     try {
         if (req.params.result === 'success') {
-            return res.status(200).json({
-                data: req.userInfo
-            });
+            res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
         }
 
-        return res.status(401).json({
-            code: "AUTH_EXPIRED",
-        });
+        res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
@@ -177,7 +173,7 @@ router.post('/login', async (req, res) => {
                     });
 
                     // return userData
-                    const {password, verify_key,...userData} = userInfo.dataValues;
+                    const {password, verify_key, refresh_key, ...userData} = userInfo.dataValues;
                     return res.status(200).json({
                         data: {
                             userData,
