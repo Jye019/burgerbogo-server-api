@@ -57,9 +57,9 @@ exports.renewToken = (req, res) => {
           if(refreshTokenJSON.refreshkey === userInfo.refresh_key && Date.now() <= refreshTokenJSON.exp * 1000) {
             const accessToken = jwt.sign({id: userInfo.id, nickname: userInfo.nickname, user_level: userInfo.user_level}, 
                                         ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                                        { expiresIn: '2m', issuer: 'nsm',});
+                                        { expiresIn: '10m', issuer: 'nsm',});
             // return userData
-            const {password, verify_key,...userData} = userInfo.dataValues;
+            const {password, verify_key, refresh_key, ...userData} = userInfo.dataValues;
             return res.status(200).json({
                 data: {
                     userData,
@@ -73,6 +73,8 @@ exports.renewToken = (req, res) => {
           });
         }
       }
+
+      return res.status(200).json({});
     });
   } catch (err) {
     console.error(err);
