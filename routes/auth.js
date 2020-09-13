@@ -18,25 +18,40 @@ const passwordValidation = (req) => {
 }
 
 // 회원가입
+router.post('/join/:validation', async (req, res) => {
+    try {
+        if(req.params.validation === 'email') {
+            const emailRegExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
+            if(!emailRegExp.test(req.body.email)) {
+                return res.status(409).json({
+                    code: "AUTH_REGEXP_FAIL_EMAIL",
+                });
+            }
+        } 
+        if(req.params.validation === 'password') {
+            const success = passwordValidation(req);
+            if(!success) {
+                return res.status(409).json({
+                    code: "AUTH_REGEXP_FAIL_PASSWORD",
+                })
+            }    
+        }
+        
+        return res.status(200).json({
+            code: "AUTH_SUCCESS",
+        })
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ 
+            code: "ERROR", 
+            error: err.stack
+        });
+    }    
+});
+
+// 회원가입
 router.post('/join', async (req, res) => {
     try {
-        // 이메일 validation 체크
-        const emailRegExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
-        if(!emailRegExp.test(req.body.email)) {
-            return res.status(409).json({
-                code: "AUTH_REGEXP_FAIL_EMAIL",
-            });
-        }
-
-        // 비밀번호 validation 체크
-        const success = passwordValidation(req);
-        if(!success) {
-            return res.status(409).json({
-                code: "AUTH_REGEXP_FAIL_PASSWORD",
-            })
-        }
-           
-        // 계정 유무 확인
         const exUser = await User.findOne({
             where : {
                 email: req.body.email,
@@ -56,7 +71,9 @@ router.post('/join', async (req, res) => {
         });
 
         if(middleware.sendEmail(req, res, 1)) {
-            res.status(200).json({});
+            res.status(200).json({
+                code: "AUTH_SUCCESS"
+            });
         };
         return res.status(500).json({
             code: "AUTH_EXTSERV_MAIL_FAIL"
@@ -74,7 +91,9 @@ router.post('/join', async (req, res) => {
 router.post('/send',  async (req, res) => {
     try {
         if(middleware.sendEmail(req, res, 1)) {
-            res.status(200).json({});
+            res.status(200).json({
+                code: "AUTH_SUCCESS"
+            });
         };
         return res.status(500).json({
             code: "AUTH_EXTSERV_MAIL_FAIL"
@@ -113,9 +132,7 @@ router.get('/confirmEmail', async (req, res) => {
             req.userInfo = {...userInfo.dataValues};
             res.redirect('/auth/success');
         } 
-
         res.redirect('/auth/fail');
-        
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
@@ -237,7 +254,9 @@ router.post('/detail', async(req, res) => {
             }
         })
 
-        return res.status(200).json({})
+        return res.status(200).json({
+            code: "AUTH_SUCCESS"
+        });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
@@ -248,7 +267,7 @@ router.post('/detail', async(req, res) => {
 });
 
 // 비밀번호 재설정
-router.post('/reset-pw', async(req, res) => {
+router.post('/reset-pw', middleware.verifyToken, async(req, res) => {
     try {
         if(!passwordValidation(req)) {
             return res.status(409).json({
@@ -264,7 +283,9 @@ router.post('/reset-pw', async(req, res) => {
             }
         })
 
-        return res.status(200).json({})
+        return res.status(200).json({
+            code: "AUTH_SUCCESS"
+        });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ 
@@ -275,7 +296,7 @@ router.post('/reset-pw', async(req, res) => {
 });
 
 // accessToken 확인
-router.post('/verify', middleware.verifyToken, (req, res) => {return res.status(200).json({})});
+router.post('/verify', middleware.verifyToken, (req, res) => {return res.status(200).json({code: "AUTH_SUCCESS"})});
 
 // accessToken 갱신
 router.post('/renew', middleware.renewToken);
