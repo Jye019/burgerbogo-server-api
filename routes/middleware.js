@@ -74,7 +74,9 @@ exports.renewToken = (req, res) => {
         }
       }
 
-      return res.status(200).json({});
+      return res.status(200).json({ 
+        "code": "AUTH_TOKEN_NO_CHANGE"
+      });
     });
   } catch (err) {
     console.error(err);
