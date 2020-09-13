@@ -10,7 +10,7 @@ const router = express.Router();
 
 // 비밀번호 validation 
 const passwordValidation = (req) => {
-    const pwdRegExp = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z]).*$/;
+    const pwdRegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
     if (!pwdRegExp.test(req.body.password)) {
         return false;
     }
