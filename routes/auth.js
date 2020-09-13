@@ -75,7 +75,7 @@ router.post('/join', dubplicationEmail, async (req, res) => {
         });
 
         if(middleware.sendEmail(req, res, 1)) {
-            res.status(200).json({"code": "AUTH_SUCCESS"});
+            return res.status(200).json({"code": "AUTH_SUCCESS"});
         };
         return res.status(500).json({
             code: "AUTH_EXTSERV_MAIL_FAIL"
