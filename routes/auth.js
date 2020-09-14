@@ -10,15 +10,46 @@ const router = express.Router();
 
 // 비밀번호 validation 
 const passwordValidation = (req) => {
-    const pwdRegExp = /^.*(?=^.{8,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
+    const pwdRegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
     if (!pwdRegExp.test(req.body.password)) {
         return false;
     }
     return true;
 }
 
+
+// 이메일 중복확인
+const dubplicationEmail = async (req, res, next) => {
+    try {
+        const exUser = await User.findOne({
+            where : {
+                email: req.body.email,
+            }
+        });
+        if(exUser) {
+            return res.status(409).json({
+                code: "AUTH_DUPLICATED_EMAIL",
+            })
+        } 
+
+        next();
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ 
+            code: "ERROR", 
+            error: err.stack
+        });
+    }    
+}
+
+router.post('/', dubplicationEmail, async (req, res) => {
+    return res.status(200).json({
+        code: "AUTH_SUCCESS",
+    })
+});
+
 // 회원가입
-router.post('/join', async (req, res) => {
+router.post('/join', dubplicationEmail, async (req, res) => {
     try {
         // 이메일 validation 체크
         const emailRegExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
@@ -34,19 +65,7 @@ router.post('/join', async (req, res) => {
             return res.status(409).json({
                 code: "AUTH_REGEXP_FAIL_PASSWORD",
             })
-        }
-           
-        // 계정 유무 확인
-        const exUser = await User.findOne({
-            where : {
-                email: req.body.email,
-            }
-        });
-        if(exUser) {
-            return res.status(409).json({
-                code: "AUTH_DUPLICATED_EMAIL",
-            })
-        } 
+        }        
 
         // 계정 생성
         const hashedPassword = await bcrypt.hash(req.body.password, bcrypt.genSaltSync(10));
@@ -56,7 +75,7 @@ router.post('/join', async (req, res) => {
         });
 
         if(middleware.sendEmail(req, res, 1)) {
-            res.status(200).json({});
+            return res.status(200).json({"code": "AUTH_SUCCESS"});
         };
         return res.status(500).json({
             code: "AUTH_EXTSERV_MAIL_FAIL"

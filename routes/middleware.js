@@ -74,7 +74,9 @@ exports.renewToken = (req, res) => {
         }
       }
 
-      return res.status(200).json({});
+      return res.status(200).json({ 
+        "code": "AUTH_TOKEN_NO_CHANGE"
+      });
     });
   } catch (err) {
     console.error(err);
@@ -88,20 +90,6 @@ exports.renewToken = (req, res) => {
 // 이메일 전송
 exports.sendEmail = async (req, res, emailType) => {
   try {
-    const key1 = crypto.randomBytes(256).toString("hex").substring(99, 51);
-    const key2 = crypto.randomBytes(256).toString("base64").substring(51, 99);
-    const verifyKey = encodeURIComponent(key1 + key2);
-    const verifyLink = `http://${req.get("host")}/auth/confirmEmail?key=${verifyKey}`;
-
-    await User.update(
-      { verify_key: verifyKey },
-      {
-        where: {
-          email: req.body.email,
-        },
-      }
-    );
-
     const email = await Email.findOne({
       attributes: ["id", "subject", "contents"],
       where: {
@@ -112,11 +100,28 @@ exports.sendEmail = async (req, res, emailType) => {
     const template = handlebars.compile(email.contents);
     let contents = template();
     if (email.id === 1) {
+      const key1 = crypto.randomBytes(256).toString("hex").substring(99, 51);
+      const key2 = crypto.randomBytes(256).toString("base64").substring(51, 99);
+      const verifyKey = encodeURIComponent(key1 + key2);
+      const verifyLink = `http://${req.get("host")}/auth/confirmEmail?key=${verifyKey}`;
+  
+      await User.update(
+        { verify_key: verifyKey },
+        {
+          where: {
+            email: req.body.email,
+          },
+        }
+      );
+
       contents = template({ verifyLink });
     }
 
     const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      port: 465,
       host: "smtp.gmail.com",
+      secure: true,
       auth: {
         user: process.env.NSM_EMAIL,
         pass: process.env.NSM_EMAIL_PW,
