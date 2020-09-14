@@ -80,14 +80,28 @@ router.get("/today", async (req, res) => {
   try {
     const todayBurger = await TBurger.findAll({
       attributes: [["burger_id", "id"]],
+      raw: true,
     });
-    const filter = todayBurger.map((e) => e.dataValues);
+    const filter = todayBurger.map((e) => e);
     console.log(filter);
+
     const result = await Burger.scope("burgersToday").findAll({
       where: {
         [Op.or]: filter,
       },
+      raw: true,
     });
+    for (let i = 0; i < filter.length; i += 1) {
+      const getScore = await sequelize.query(
+        "SELECT AVG(score) AS score FROM reviews WHERE burger_id=? AND score IS NOT NULL",
+        { type: seq.QueryTypes.SELECT, replacements: [filter[i].id] }
+      );
+      for (let j = 0; j < result.length; j += 1) {
+        if (result[j].id === filter[i].id) {
+          result[j].score = getScore[0].score;
+        }
+      }
+    }
     res.status(200).json({ data: result });
   } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
