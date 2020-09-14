@@ -107,13 +107,9 @@ exports.sendEmail = async (req, res, emailType) => {
   
       await User.update(
         { verify_key: verifyKey },
-        {
-          where: {
-            email: req.body.email,
-          },
-        }
+        { where: { email: req.body.email, },}
       );
-      contents = template({ verifyLink });
+      contents = template({ verifyLink });  
     }
 
     const transporter = nodemailer.createTransport({
