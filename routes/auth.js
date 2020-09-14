@@ -42,7 +42,7 @@ const dubplicationEmail = async (req, res, next) => {
     }    
 }
 
-router.post('/', dubplicationEmail, async (req, res) => {
+router.post('/duplicate', dubplicationEmail, async (req, res) => {
     return res.status(200).json({
         code: "AUTH_SUCCESS",
     })
