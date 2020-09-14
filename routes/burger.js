@@ -153,8 +153,21 @@ router.get("/", async (req, res) => {
       return res
         .status(406)
         .json({ code: parsed.code, message: parsed.message });
-    const result = await Burger.findAll(parsed);
-    return res.status(200).json({ data: result });
+    const found = await Burger.findAll({ ...parsed, raw: true });
+    let withScore = {};
+    if (req.query.id) {
+      const score = await sequelize.query(
+        "SELECT AVG(score) AS score FROM reviews WHERE burger_id=? AND score IS NOT NULL",
+        { type: seq.QueryTypes.SELECT, replacements: [req.query.id] }
+      );
+      const flavor = await sequelize.query(
+        "SELECT AVG(sweet) AS sweet,AVG(sour) AS sour,AVG(salty) AS salty,AVG(spicy) AS spicy,AVG(greasy) AS greasy FROM reviews WHERE burger_id=? AND sweet IS NOT NULL",
+        { type: seq.QueryTypes.SELECT, replacements: [req.query.id] }
+      );
+      withScore = Object.assign(found[0], score[0], flavor[0]);
+      return res.status(200).json({ data: [withScore] });
+    }
+    return res.status(200).json({ data: found });
   } catch (err) {
     return res.status(500).json({ code: "ERROR", error: err.stack });
   }
