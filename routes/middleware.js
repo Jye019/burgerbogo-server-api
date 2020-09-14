@@ -110,8 +110,10 @@ exports.sendEmail = async (req, res, emailType) => {
         { where: { email: req.body.email, },}
       );
       contents = template({ verifyLink });  
+      console.log(verifyLink);
     }
 
+    console.log(process.env.NSM_EMAIL, process.env.NSM_EMAIL_PW)
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       port: 465,
