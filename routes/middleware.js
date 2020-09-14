@@ -113,7 +113,6 @@ exports.sendEmail = async (req, res, emailType) => {
           },
         }
       );
-
       contents = template({ verifyLink });
     }
 
