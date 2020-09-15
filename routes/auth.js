@@ -6,15 +6,19 @@ import sequelize from "sequelize";
 import { User } from '../models';
 import middleware from './middleware';
 
+const { sendEmail, verifyToken, renewToken} = middleware;
+
 const router = express.Router();
 
 // 비밀번호 validation 
-const passwordValidation = (req) => {
+const passwordValidation = (req, res, next) => {
     const pwdRegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
     if (!pwdRegExp.test(req.body.password)) {
-        return false;
+        return res.status(409).json({
+            code: "AUTH_REGEXP_FAIL_PASSWORD",
+        });
     }
-    return true;
+    next();
 }
 
 
@@ -60,12 +64,7 @@ router.post('/join', dubplicationEmail, async (req, res) => {
         }
 
         // 비밀번호 validation 체크
-        const success = passwordValidation(req);
-        if(!success) {
-            return res.status(409).json({
-                code: "AUTH_REGEXP_FAIL_PASSWORD",
-            })
-        }        
+        passwordValidation(req);
 
         // 계정 생성
         const hashedPassword = await bcrypt.hash(req.body.password, bcrypt.genSaltSync(10));
@@ -74,7 +73,7 @@ router.post('/join', dubplicationEmail, async (req, res) => {
             password: hashedPassword, 
         });
 
-        if(middleware.sendEmail(req, res, 1)) {
+        if(sendEmail(req, res, 1)) {
             return res.status(200).json({"code": "AUTH_SUCCESS"});
         };
         return res.status(500).json({
@@ -89,12 +88,26 @@ router.post('/join', dubplicationEmail, async (req, res) => {
     }    
 });
 
-// 이메일 인증 재전송
-router.post('/send',  async (req, res) => {
+// 이메일 전송
+router.post('/send/:type',  async (req, res) => {
     try {
-        if(middleware.sendEmail(req, res, 1)) {
-            res.status(200).json({"code": "AUTH_SUCCESS"});
-        };
+        // 인증 이메일 재전송 
+        if(req.params.type === 'address') {
+            if(sendEmail(req, res, 1)) {
+                return res.status(200).json({"code": "AUTH_SUCCESS"});
+            };    
+        } 
+        // 비밀번호 변경 이메일 전송 
+        if(req.params.type === 'pw') {
+            const user = await User.findOne({where : {email: req.body.email}})
+            if( user ) {
+                if(sendEmail(req, res, 2)) {
+                    req.userInfo = user;
+                    return res.status(200).json({"code": "AUTH_SUCCESS"});
+                };   
+            }
+            return res.status(409).json({"code": "AUTH_NOT_EXIST"});
+        }
         return res.status(500).json({
             code: "AUTH_EXTSERV_MAIL_FAIL"
         });
@@ -219,7 +232,7 @@ router.post('/login', async (req, res) => {
 })
 
 // 개인정보 등록 및 수정 
-router.post('/detail', async(req, res) => {
+router.post('/detail', verifyToken, async(req, res) => {
     try {
         const {nickname, gender, birth_year} = req.body;
         const accessTokenJSON = jwt.decode(req.headers.authorization);
@@ -265,13 +278,8 @@ router.post('/detail', async(req, res) => {
 });
 
 // 비밀번호 재설정
-router.post('/reset-pw', async(req, res) => {
+router.post('/reset-pw', verifyToken, passwordValidation, async(req, res) => {
     try {
-        if(!passwordValidation(req)) {
-            return res.status(409).json({
-                code: "AUTH_REGEXP_FAIL_PASSWORD",
-            })
-        }
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
         const accessTokenJSON = jwt.decode(req.headers.authorization)
@@ -295,10 +303,10 @@ router.post('/reset-pw', async(req, res) => {
 });
 
 // accessToken 확인
-router.post('/verify', middleware.verifyToken, (req, res) => {return res.status(200).json({code: "AUTH_SUCCESS",})});
+router.post('/verify', verifyToken, (req, res) => {return res.status(200).json({code: "AUTH_SUCCESS",})});
 
 // accessToken 갱신
-router.post('/renew', middleware.renewToken);
+router.post('/renew', renewToken);
 
 
 export default router;
