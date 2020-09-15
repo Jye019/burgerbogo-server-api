@@ -114,9 +114,6 @@ exports.sendEmail = async (req, res, emailType) => {
       console.log(verifyLink);
     }
 
-<<<<<<< HEAD
-    console.log(process.env.NSM_EMAIL, process.env.NSM_EMAIL_PW)
-=======
     if (emailType === 2) {
       const {id, nickname='버거보고 회원'} = req.userInfo;
       const token = jwt.sign( {id, nickname}, 
@@ -126,7 +123,6 @@ exports.sendEmail = async (req, res, emailType) => {
       contents = template({nickname, resetPasswordLink}); 
     }
 
->>>>>>> Feat: 비밀번호 설정 이메일 전송 로직 추가
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       port: 465,
