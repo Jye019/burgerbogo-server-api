@@ -221,41 +221,38 @@ router.post('/login', async (req, res) => {
 // 개인정보 등록 및 수정 
 router.post('/detail', async(req, res) => {
     try {
-        // 닉네임 validation 체크
-        const nicknameRegExp = /^[ㄱ-ㅎ가-힣a-zA-Z]{1,10}$/;
-        if(!nicknameRegExp.test(req.body.nickname)) {
-            return res.status(409).json({
-                code: "AUTH_REGEXP_FAIL_NICKNAME",
-            });
-        }
-        
-        // 닉네임 중복 체크
-        const accessTokenJSON = jwt.decode(req.headers.authorization)
-        const user = await User.findOne({
-            where: {
-                [sequelize.Op.and] : [
-                    {nickname: req.body.nickname},
-                    {id: {[sequelize.Op.ne]: accessTokenJSON.id}}
-                ]
-            }
-        })
+        const {nickname, gender, birth_year} = req.body;
+        const accessTokenJSON = jwt.decode(req.headers.authorization);
 
-        if(user) {
-            return res.status(409).json({
-                code: 'AUTH_DUPLICATED_NICNAME'
+        if(nickname) {
+            // 닉네임 validation 체크
+            const nicknameRegExp = /^[ㄱ-ㅎ가-힣a-zA-Z]{1,10}$/;
+            if(!nicknameRegExp.test(req.body.nickname)) {
+                return res.status(409).json({
+                    code: "AUTH_REGEXP_FAIL_NICKNAME",
+                });
+            }
+            
+            // 닉네임 중복 체크
+            const user = await User.findOne({
+                where: {
+                    [sequelize.Op.and] : [
+                        {nickname: req.body.nickname},
+                        {id: {[sequelize.Op.ne]: accessTokenJSON.id}}
+                    ]
+                }
             })
+
+            if(user) {
+                return res.status(409).json({
+                    code: 'AUTH_DUPLICATED_NICKNAME'
+                })
+            }
         }
 
         // 추가 정보 update
-        await User.update({
-            nickname: req.body.nickname,
-            gender: req.body.gender,
-            birth_year: req.body.birth_year,
-        }, {
-            where: {
-                id: accessTokenJSON.id
-            }
-        })
+        await User.update({ nickname, gender, birth_year }, 
+                          { where: { id: accessTokenJSON.id }});
 
         return res.status(200).json({"code": "AUTH_SUCCESS"})
     } catch (err) {
