@@ -9,14 +9,6 @@ import {logger} from '../library/log';
 
 const { sendEmail, verifyToken, renewToken} = middleware;
 
-const { sendEmail, verifyToken, renewToken} = middleware;
-
-const { sendEmail, verifyToken, renewToken} = middleware;
-
-const { sendEmail, verifyToken, renewToken} = middleware;
-
-const { sendEmail, verifyToken, renewToken} = middleware;
-
 const router = express.Router();
 
 // 비밀번호 validation 
