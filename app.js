@@ -9,6 +9,7 @@ import filter from "./routes/filter";
 import ingredient from "./routes/ingredient";
 import models from "./models";
 import db from "./library/db";
+import {logger} from "./library/log";
 
 // 테이블이 존재하지 않으면 테이블 생성
 db.syncronize(models);
@@ -32,6 +33,7 @@ dotenv.config();
 
 // 에러 핸들러
 app.use((req, res) => {
+  logger.error("404 Not Found");
   res.status(404).json({ message: "404 Not Found" });
 });
 

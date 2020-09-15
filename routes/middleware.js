@@ -3,6 +3,7 @@ import handlebars from "handlebars";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 import { Email, User } from "../models";
+import {logger} from '../library/log';
 
 // access Token 검증
 exports.verifyToken = (req, res, next) => {
@@ -24,7 +25,7 @@ exports.verifyToken = (req, res, next) => {
       next();
     });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     return res.status(500).json({
       code: "ERROR",
       message: err.stack,
@@ -79,7 +80,7 @@ exports.renewToken = (req, res) => {
       });
     });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     return res.status(500).json({
       code: "ERROR",
       message: err.stack,
@@ -105,13 +106,12 @@ exports.sendEmail = async (req, res, emailType) => {
       const key2 = crypto.randomBytes(256).toString("base64").substring(51, 99);
       const verifyKey = encodeURIComponent(key1 + key2);
       const verifyLink = `http://${req.get("host")}/auth/confirmEmail?key=${verifyKey}`;
-  
+
       await User.update(
         { verify_key: verifyKey },
         { where: { email: req.body.email, },}
       );
       contents = template({ verifyLink });  
-      console.log(verifyLink);
     }
 
     if (emailType === 2) {
@@ -150,7 +150,7 @@ exports.sendEmail = async (req, res, emailType) => {
     );
     return success;
   } catch (err) {
-    console.log(err);
+    logger.log(err);
     return res.status(409).json({
       code: "ERROR",
       error: err.stack,

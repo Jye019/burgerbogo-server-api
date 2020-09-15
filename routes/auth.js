@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import sequelize from "sequelize";
 import { User } from '../models';
 import middleware from './middleware';
+import {logger} from '../library/log';
 
 const { sendEmail, verifyToken, renewToken} = middleware;
 
@@ -38,7 +39,7 @@ const dubplicationEmail = async (req, res, next) => {
 
         next();
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return res.status(500).json({ 
             code: "ERROR", 
             error: err.stack
@@ -80,7 +81,7 @@ router.post('/join', dubplicationEmail, async (req, res) => {
             code: "AUTH_EXTSERV_MAIL_FAIL"
         });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return res.status(500).json({ 
             code: "ERROR", 
             error: err.stack
@@ -112,7 +113,7 @@ router.post('/send/:type',  async (req, res) => {
             code: "AUTH_EXTSERV_MAIL_FAIL"
         });
     } catch (err) {  
-        console.log(err);
+        logger.log(err);
         return res.status(500).json({
             code: "ERROR",
             error: err.stack
@@ -149,7 +150,7 @@ router.get('/confirmEmail', async (req, res) => {
         res.redirect('/auth/fail');
         
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return res.status(500).json({ 
             code: "ERROR", 
             error: err.stack 
@@ -167,7 +168,7 @@ router.get('/:result', async (req, res) => {
 
         res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return res.status(500).json({ 
             code: "ERROR",
             error: err.stack 
@@ -223,7 +224,7 @@ router.post('/login', async (req, res) => {
             code: "AUTH_LOGIN_FAIL_INFO",
         });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return res.status(500).json({ 
             code: "ERROR",
             error: err.stack 
@@ -269,7 +270,7 @@ router.post('/detail', verifyToken, async(req, res) => {
 
         return res.status(200).json({"code": "AUTH_SUCCESS"})
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return res.status(500).json({ 
             code: "ERROR", 
             message: err.stack 
@@ -294,7 +295,7 @@ router.post('/reset-pw', verifyToken, passwordValidation, async(req, res) => {
             code: "AUTH_SUCCESS", 
         })
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return res.status(500).json({ 
             code: "ERROR", 
             message: err.stack 
