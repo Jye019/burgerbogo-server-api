@@ -99,7 +99,8 @@ exports.sendEmail = async (req, res, emailType) => {
 
     const template = handlebars.compile(email.contents);
     let contents = template();
-    if (email.id === 1) {
+
+    if (emailType === 1) {
       const key1 = crypto.randomBytes(256).toString("hex").substring(99, 51);
       const key2 = crypto.randomBytes(256).toString("base64").substring(51, 99);
       const verifyKey = encodeURIComponent(key1 + key2);
@@ -115,6 +116,15 @@ exports.sendEmail = async (req, res, emailType) => {
       );
 
       contents = template({ verifyLink });
+    }
+
+    if (emailType === 2) {
+      const {id, nickname='버거보고 회원'} = req.userInfo;
+      const token = jwt.sign( {id, nickname}, 
+                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
+                            { expiresIn: '10m', issuer: 'nsm',});
+      const resetPasswordLink = `http://${req.get("host")}/reset/pw/${token}`;
+      contents = template({nickname, resetPasswordLink}); 
     }
 
     const transporter = nodemailer.createTransport({
