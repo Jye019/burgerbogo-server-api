@@ -141,6 +141,15 @@ exports.sendEmail = async (req, res, emailType) => {
       contents = template({nickname, resetPasswordLink}); 
     }
 
+    if (emailType === 2) {
+      const {id, nickname='버거보고 회원'} = req.userInfo;
+      const token = jwt.sign( {id, nickname}, 
+                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
+                            { expiresIn: '10m', issuer: 'nsm',});
+      const resetPasswordLink = `http://${req.get("host")}/reset/pw/${token}`;
+      contents = template({nickname, resetPasswordLink}); 
+    }
+
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       port: 465,
