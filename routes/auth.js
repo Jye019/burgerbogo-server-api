@@ -54,7 +54,7 @@ router.post('/duplicate', dubplicationEmail, async (req, res) => {
 });
 
 // 회원가입
-router.post('/join', dubplicationEmail, async (req, res) => {
+router.post('/join', dubplicationEmail, passwordValidation, async (req, res) => {
     try {
         // 이메일 validation 체크
         const emailRegExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
@@ -63,9 +63,6 @@ router.post('/join', dubplicationEmail, async (req, res) => {
                 code: "AUTH_REGEXP_FAIL_EMAIL",
             });
         }
-
-        // 비밀번호 validation 체크
-        passwordValidation(req);
 
         // 계정 생성
         const hashedPassword = await bcrypt.hash(req.body.password, bcrypt.genSaltSync(10));
