@@ -143,7 +143,9 @@ router.get('/confirmEmail', async (req, res) => {
             req.userInfo = {...userInfo.dataValues};
             return res.redirect('/auth/success');
         } 
+
         return res.redirect('/auth/fail');
+        
     } catch (err) {
         logger.error(err);
         return res.status(500).json({ code: "ERROR", error: err.stack });
