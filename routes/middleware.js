@@ -123,50 +123,18 @@ exports.sendEmail = async (req, res, emailType) => {
       contents = template({nickname, resetPasswordLink}); 
     }
 
-    if (emailType === 2) {
-      const {id, nickname='버거보고 회원'} = req.userInfo;
-      const token = jwt.sign( {id, nickname}, 
-                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                            { expiresIn: '10m', issuer: 'nsm',});
-      const resetPasswordLink = `http://${req.get("host")}/reset/pw/${token}`;
-      contents = template({nickname, resetPasswordLink}); 
-    }
-
-    if (emailType === 2) {
-      const {id, nickname='버거보고 회원'} = req.userInfo;
-      const token = jwt.sign( {id, nickname}, 
-                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                            { expiresIn: '10m', issuer: 'nsm',});
-      const resetPasswordLink = `http://${req.get("host")}/reset/pw/${token}`;
-      contents = template({nickname, resetPasswordLink}); 
-    }
-
-    if (emailType === 2) {
-      const {id, nickname='버거보고 회원'} = req.userInfo;
-      const token = jwt.sign( {id, nickname}, 
-                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                            { expiresIn: '10m', issuer: 'nsm',});
-      const resetPasswordLink = `http://${req.get("host")}/reset/pw/${token}`;
-      contents = template({nickname, resetPasswordLink}); 
-    }
-
-    if (emailType === 2) {
-      const {id, nickname='버거보고 회원'} = req.userInfo;
-      const token = jwt.sign( {id, nickname}, 
-                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                            { expiresIn: '10m', issuer: 'nsm',});
-      const resetPasswordLink = `http://${req.get("host")}/reset/pw/${token}`;
-      contents = template({nickname, resetPasswordLink}); 
-    }
-
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
       port: 465,
       host: "smtp.gmail.com",
       secure: true,
       auth: {
+        type: 'OAuth2',
         user: process.env.NSM_EMAIL,
-        pass: process.env.NSM_EMAIL_PW,
+        clientId: '268947122060-b8sl6jti7qftjum6tf6kn3eueg3jfma3.apps.googleusercontent.com',
+        clientSecret: 'cQw4Cc4COwzqzRNmAqft8iwL',
+        refreshToken: '1//0fGv_NzQfiO8MCgYIARAAGA8SNwF-L9IrKAds4gGKma8syL4dYOAW1clgbUU-OwA6zWuzv8S2yfTiIKBpPvC5kXJInl6lBJ6-xYc',
+        accessToken: 'ya29.a0AfH6SMAG1xK0pKUK_-eQ31VJQsZAuhQtfgFuJNANLgq5XkPrv-klCRRepvcjAOOzaTNrli8kiy5GLHWjF1zUZlaeI0LVrqmo5PTf0R6l7GYzqRHqoQh9tNwm12zWuU39HqC_2s3yBVtorrZNTLCtpPXfyyNx49iQEtU',
+        expires: 3600
       },
     });
 
@@ -178,12 +146,10 @@ exports.sendEmail = async (req, res, emailType) => {
         subject: email.subject,
         html: contents,
       },
-      (error) => {
-        if (error) {
-          success = false;
-        }
-      }
+      (error) => {if (error) {success = false;}}
     );
+
+    transporter.close();
     return success;
   } catch (err) {
     logger.log(err);
