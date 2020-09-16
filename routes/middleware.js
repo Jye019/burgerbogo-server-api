@@ -87,9 +87,9 @@ exports.sendEmail = async (req, res, emailType) => {
     let contents = template();
 
     if (emailType === 1) {
-      const key1 = crypto.randomBytes(256).toString("hex").substring(99, 51);
-      const key2 = crypto.randomBytes(256).toString("base64").substring(51, 99);
-      const verifyKey = encodeURIComponent(key1 + key2);
+      const key1 = encodeURIComponent(crypto.randomBytes(256).toString("hex")).substring(99, 51);
+      const key2 = encodeURIComponent(crypto.randomBytes(256).toString("base64")).substring(51, 99);
+      const verifyKey = key1 + key2;
       const verifyLink = `http://${req.get("host")}/auth/confirmEmail?key=${verifyKey}`;
 
       await User.update(
