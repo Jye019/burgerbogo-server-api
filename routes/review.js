@@ -3,6 +3,7 @@ import seq from "sequelize";
 import { Review, Burger, User } from "../models";
 import { parseQueryString } from "../library/parsing";
 import middleware from "./middleware";
+import {logger} from '../library/log';
 
 const { verifyToken } = middleware;
 
@@ -105,6 +106,24 @@ router.delete("/", verifyToken, async (req, res) => {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
+
+// 내가 쓴 리뷰 조회
+router.get("/my", verifyToken, async (req, res) => {
+  try {
+    const list = await Review.findAll(
+      {attribute: [
+          {include: [seq.literal(`(SELECT name FROM burgers AS WHERE id = burger_id)`)]}
+          , Review.id, Review.create_at, Review.content, Review.score
+      ]},
+      {where: {user_id: req.atoken.id }}
+    );
+
+    res.status(200).json({data:list});
+  } catch (err) {
+    logger.error(err);
+    res.status(500).json({ code: "ERROR", error: err.stack });
+  }
+})
 
 router.get("/test", async (req, res) => {
   const result = await Review.findAll({
