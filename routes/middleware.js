@@ -8,17 +8,14 @@ import {logger} from '../library/log';
 // access Token 검증
 exports.verifyToken = (req, res, next) => {
   try {
+    if(!req.headers.authorization) return res.status(401).json({ code: "TOKEN_IS_MISSING" });
     jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", (err, decoded) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
-          return res.status(419).json({
-            code: "AUTH_ACCESS_EXPIRED",
-          });
+          return res.status(419).json({ code: "AUTH_ACCESS_EXPIRED" });
         }
         if (err.name === 'JsonWebTokenError') {
-          return res.status(401).json({
-            code: "AUTH_INVALID_TOKEN",
-          });
+          return res.status(401).json({ code: "AUTH_INVALID_TOKEN" });
         } 
       }
       req.atoken = decoded;
@@ -26,10 +23,7 @@ exports.verifyToken = (req, res, next) => {
     });
   } catch (err) {
     logger.error(err);
-    return res.status(500).json({
-      code: "ERROR",
-      message: err.stack,
-    });
+    return res.status(500).json({ code: "ERROR", message: err.stack });
   }
 };
 
@@ -39,12 +33,12 @@ exports.verifyToken = (req, res, next) => {
 */
 exports.renewToken = (req, res) => {
   try {
+    if(!req.headers.authorization) return res.status(401).json({ code: "TOKEN_IS_MISSING" });
+
     jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", async (err) => {
       if (err) {
         if (err.name === 'JsonWebTokenError') {
-          return res.status(419).json({
-            code: "AUTH_INVALID_TOKEN",
-          });
+          return res.status(419).json({ code: "AUTH_INVALID_TOKEN" });
         }
 
         // access token 재발급 또는 로그인 창으로 이동 
@@ -69,22 +63,15 @@ exports.renewToken = (req, res) => {
             });
           }
           
-          return res.status(419).json({
-            code: "AUTH_REFRESH_EXPIRED"
-          });
+          return res.status(419).json({ code: "AUTH_REFRESH_EXPIRED" });
         }
       }
 
-      return res.status(200).json({ 
-        "code": "AUTH_TOKEN_NO_CHANGE"
-      });
+      return res.status(200).json({ code : "AUTH_TOKEN_NO_CHANGE" });
     });
   } catch (err) {
     logger.error(err);
-    return res.status(500).json({
-      code: "ERROR",
-      message: err.stack,
-    });
+    return res.status(500).json({ code: "ERROR", message: err.stack });
   }
 }
 
@@ -93,9 +80,7 @@ exports.sendEmail = async (req, res, emailType) => {
   try {
     const email = await Email.findOne({
       attributes: ["id", "subject", "contents"],
-      where: {
-        id: emailType,
-      },
+      where: { id: emailType },
     });
 
     const template = handlebars.compile(email.contents);
@@ -153,10 +138,7 @@ exports.sendEmail = async (req, res, emailType) => {
     return success;
   } catch (err) {
     logger.log(err);
-    return res.status(409).json({
-      code: "ERROR",
-      error: err.stack,
-    });
+    return res.status(409).json({ code: "ERROR", error: err.stack });
   }
 };
 

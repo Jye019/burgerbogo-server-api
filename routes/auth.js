@@ -13,48 +13,57 @@ const router = express.Router();
 
 // 비밀번호 validation 
 const passwordValidation = (req, res, next) => {
+    if(!req.body.password) return res.status(401).json({ code: "PASSWORD_IS_MISSING" });
+
     const pwdRegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
     if (!pwdRegExp.test(req.body.password)) {
-        return res.status(409).json({
-            code: "AUTH_REGEXP_FAIL_PASSWORD",
-        });
+        return res.status(409).json({ code: "AUTH_REGEXP_FAIL_PASSWORD" });
     }
     next();
 }
 
-
 // 이메일 중복확인
-const dubplicationEmail = async (req, res, next) => {
+const dubplicateEmail = async (req, res, next) => {
     try {
-        const exUser = await User.findOne({
-            where : {
-                email: req.body.email,
-            }
-        });
-        if(exUser) {
-            return res.status(409).json({
-                code: "AUTH_DUPLICATED_EMAIL",
-            })
-        } 
+        if(!req.body.email) return res.status(401).json({ code: "EMAIL_IS_MISSING" });
+
+        const exUser = await User.findOne({ where : { email: req.body.email }});
+        if(exUser) return res.status(409).json({ code: "AUTH_DUPLICATED_EMAIL" });
 
         next();
     } catch (err) {
         logger.error(err);
-        return res.status(500).json({ 
-            code: "ERROR", 
-            error: err.stack
-        });
+        return res.status(500).json({ code: "ERROR", error: err.stack });
     }    
 }
 
-router.post('/duplicate', dubplicationEmail, async (req, res) => {
-    return res.status(200).json({
-        code: "AUTH_SUCCESS",
-    })
+const duplicateNickname = async (req, res) => {
+    try {
+        if(!req.body.nickname) return res.status(401).json({ code: "NICKNAME_IS_MISSING" });
+
+        // 닉네임 중복 체크
+        const user = await User.findOne({where: { nickname: req.body.nickname }});
+        if(user) return true;
+        return false;
+    } catch (err) {
+        logger.error(err);
+        return res.status(500).json({ code: "ERROR", error: err.stack }); 
+    }
+}
+
+router.post('/duplicate/email', dubplicateEmail, async (req, res) => {
+    return res.status(200).json({ code: "AUTH_SUCCESS" })
+});
+
+router.post('/duplicate/nickname', async (req, res) => {
+    if(await duplicateNickname(req, res)) {
+        return res.status(409).json({ code: 'AUTH_DUPLICATED_NICKNAME'});
+    }
+    return res.status(200).json({ code: "AUTH_SUCCESS" });
 });
 
 // 회원가입
-router.post('/join', dubplicationEmail, passwordValidation, async (req, res) => {
+router.post('/join', dubplicateEmail, passwordValidation, async (req, res) => {
     try {
         // 이메일 validation 체크
         const emailRegExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
@@ -74,21 +83,18 @@ router.post('/join', dubplicationEmail, passwordValidation, async (req, res) => 
         if(sendEmail(req, res, 1)) {
             return res.status(200).json({"code": "AUTH_SUCCESS"});
         };
-        return res.status(500).json({
-            code: "AUTH_EXTSERV_MAIL_FAIL"
-        });
+        return res.status(500).json({ code: "AUTH_EXTSERV_MAIL_FAIL" });
     } catch (err) {
         logger.error(err);
-        return res.status(500).json({ 
-            code: "ERROR", 
-            error: err.stack
-        });
+        return res.status(500).json({ code: "ERROR", error: err.stack });
     }    
 });
 
 // 이메일 전송
 router.post('/send/:type',  async (req, res) => {
     try {
+        if(!req.body.email) return res.status(401).json({ code: "EMAIL_IS_MISSING" });
+
         // 인증 이메일 재전송 
         if(req.params.type === 'address') {
             if(sendEmail(req, res, 1)) {
@@ -101,20 +107,15 @@ router.post('/send/:type',  async (req, res) => {
             if( user ) {
                 if(sendEmail(req, res, 2)) {
                     req.userInfo = user;
-                    return res.status(200).json({"code": "AUTH_SUCCESS"});
+                    return res.status(200).json({ "code": "AUTH_SUCCESS" });
                 };   
             }
-            return res.status(409).json({"code": "AUTH_NOT_EXIST"});
+            return res.status(409).json({ "code": "AUTH_NOT_EXIST" });
         }
-        return res.status(500).json({
-            code: "AUTH_EXTSERV_MAIL_FAIL"
-        });
+        return res.status(500).json({ code: "AUTH_EXTSERV_MAIL_FAIL" });
     } catch (err) {  
         logger.log(err);
-        return res.status(500).json({
-            code: "ERROR",
-            error: err.stack
-        })
+        return res.status(500).json({ code: "ERROR", error: err.stack })
     }
 });
 
@@ -134,24 +135,18 @@ router.get('/confirmEmail', async (req, res) => {
     
         if(userInfo) {
             userInfo.verified = 1;
-            await User.update({verified: 1}, {
-                where: {
-                    verify_key : key,
-                }
-            });
+            await User.update(
+                { verified: 1 }, 
+                { where: { verify_key : key }}
+            );
             
             req.userInfo = {...userInfo.dataValues};
-            res.redirect('/auth/success');
+            return res.redirect('/auth/success');
         } 
-
-        res.redirect('/auth/fail');
-        
+        return res.redirect('/auth/fail');
     } catch (err) {
         logger.error(err);
-        return res.status(500).json({ 
-            code: "ERROR", 
-            error: err.stack 
-        });
+        return res.status(500).json({ code: "ERROR", error: err.stack });
     }
     
 });
@@ -159,27 +154,22 @@ router.get('/confirmEmail', async (req, res) => {
 // 이메일 인증 후 처리
 router.get('/:result', async (req, res) => {
     try {
-        if (req.params.result === 'success') {
-            res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
-        }
-
-        res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
+        if (req.params.result === 'success') return res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
+        return res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
     } catch (err) {
         logger.error(err);
-        return res.status(500).json({ 
-            code: "ERROR",
-            error: err.stack 
-        }); 
+        return res.status(500).json({ code: "ERROR", error: err.stack }); 
     }
 });
 
 // 로그인 
 router.post('/login', async (req, res) => {
     try {
+        if(!req.body.email) return res.status(401).json({ code: "EMAIL_IS_MISSING" });
+        if(!req.body.password) return res.status(401).json({ code: "PASSWORD_IS_MISSING" });
+
         const userInfo = await User.findOne({
-            where : {
-                email: req.body.email,
-            }
+            where : { email: req.body.email }
         })
         
         if(userInfo) {
@@ -197,9 +187,7 @@ router.post('/login', async (req, res) => {
                                             { expiresIn: '15m', issuer: 'nsm',});
                     
                     await User.update({refresh_key: key}, {
-                        where: {
-                            email: userInfo.email
-                        }
+                        where: { email: userInfo.email }
                     });
 
                     // return userData
@@ -212,20 +200,13 @@ router.post('/login', async (req, res) => {
                         }
                     });
                 }  
-                return res.status(401).json({
-                    code: "AUTH_LOGIN_FAIL_VERIFY",
-                });
+                return res.status(401).json({ code: "AUTH_LOGIN_FAIL_VERIFY" });
             } 
         } 
-        return res.status(401).json({
-            code: "AUTH_LOGIN_FAIL_INFO",
-        });
+        return res.status(401).json({ code: "AUTH_LOGIN_FAIL_INFO" });
     } catch (err) {
         logger.error(err);
-        return res.status(500).json({ 
-            code: "ERROR",
-            error: err.stack 
-        });
+        return res.status(500).json({ code: "ERROR", error: err.errorData });
     }
 })
 
@@ -233,45 +214,27 @@ router.post('/login', async (req, res) => {
 router.post('/detail', verifyToken, async(req, res) => {
     try {
         const {nickname, gender, birth_year} = req.body;
-        const accessTokenJSON = jwt.decode(req.headers.authorization);
 
         if(nickname) {
             // 닉네임 validation 체크
-            const nicknameRegExp = /^[ㄱ-ㅎ가-힣a-zA-Z]{1,10}$/;
+            const nicknameRegExp = /^[ㄱ-ㅎ가-힣0-9]{1,10}$/;
             if(!nicknameRegExp.test(req.body.nickname)) {
-                return res.status(409).json({
-                    code: "AUTH_REGEXP_FAIL_NICKNAME",
-                });
+                return res.status(409).json({ code: "AUTH_REGEXP_FAIL_NICKNAME" });
             }
-            
-            // 닉네임 중복 체크
-            const user = await User.findOne({
-                where: {
-                    [sequelize.Op.and] : [
-                        {nickname: req.body.nickname},
-                        {id: {[sequelize.Op.ne]: accessTokenJSON.id}}
-                    ]
-                }
-            })
 
-            if(user) {
-                return res.status(409).json({
-                    code: 'AUTH_DUPLICATED_NICKNAME'
-                })
+            if(await duplicateNickname(req)) {
+                return res.status(409).json({ code: 'AUTH_DUPLICATED_NICKNAME' });
             }
         }
 
         // 추가 정보 update
         await User.update({ nickname, gender, birth_year }, 
-                          { where: { id: accessTokenJSON.id }});
+                          { where: { id: req.atoken.id }});
 
         return res.status(200).json({"code": "AUTH_SUCCESS"})
     } catch (err) {
         logger.error(err);
-        return res.status(500).json({ 
-            code: "ERROR", 
-            message: err.stack 
-        });
+        return res.status(500).json({ code: "ERROR", message: err.stack });
     }
 });
 
@@ -280,28 +243,21 @@ router.post('/reset-pw', verifyToken, passwordValidation, async(req, res) => {
     try {
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-        const accessTokenJSON = jwt.decode(req.headers.authorization)
         
-        await User.update({password: hashedPassword}, {
-            where : {
-                id: accessTokenJSON.id
-            }
-        })
+        await User.update(
+            { password: hashedPassword }, 
+            { where : { id: req.atoken.id } }
+        );
 
-        return res.status(200).json({
-            code: "AUTH_SUCCESS", 
-        })
+        return res.status(200).json({ code: "AUTH_SUCCESS" })
     } catch (err) {
         logger.error(err);
-        return res.status(500).json({ 
-            code: "ERROR", 
-            message: err.stack 
-        });
+        return res.status(500).json({ code: "ERROR", message: err.stack });
     }
 });
 
 // accessToken 확인
-router.post('/verify', verifyToken, (req, res) => {return res.status(200).json({code: "AUTH_SUCCESS",})});
+router.post('/verify', verifyToken, (req, res) => { return res.status(200).json({code: "AUTH_SUCCESS"}) });
 
 // accessToken 갱신
 router.post('/renew', renewToken);
