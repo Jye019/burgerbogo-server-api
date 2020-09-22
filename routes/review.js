@@ -111,11 +111,10 @@ router.delete("/", verifyToken, async (req, res) => {
 router.get("/my", verifyToken, async (req, res) => {
   try {
     const list = await Review.findAll(
-      {attribute: [
-          {include: [seq.literal(`(SELECT name FROM burgers AS WHERE id = burger_id)`)]}
-          , Review.id, Review.create_at, Review.content, Review.score
-      ]},
-      {where: {user_id: req.atoken.id }}
+      {attributes: {
+          include: [[seq.literal(`(SELECT name FROM burgers  WHERE id = burger_id)`), 'burger_name']]
+      }},
+      {where: {user_id: req.body.id || req.body.atoken }}
     );
 
     res.status(200).json({data:list});
