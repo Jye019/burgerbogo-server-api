@@ -5,7 +5,7 @@ import db from '../models';
 const router = express.Router();
 
 router.get('/', async(req, res) => {
-    const {allergy, main, order} = req.body;
+    const {allergy, main, order} = req.query;
     try {
         const list =  await db.sequelize.query(
                         `SELECT DISTINCT image, 
@@ -22,13 +22,13 @@ router.get('/', async(req, res) => {
                             SELECT burger_id, 
                                    id 
                             FROM burgers_have_ingredients 
-                            WHERE ingredient_id IN (${(allergy.length===0)? 0 : allergy}) ) bi
+                            WHERE ingredient_id IN (${allergy || 0}) ) bi
                         ON burger.id = bi.burger_id 
-                        ${(main.length===0)? `LEFT` : `RIGHT`} JOIN (
+                        ${(main)? `LEFT` : `RIGHT`} JOIN (
                             SELECT burger_id, 
                                    id 
                             FROM burgers_have_ingredients 
-                            WHERE ingredient_id IN (${(main.length===0)? 0 : main}) ) bi2 
+                            WHERE ingredient_id IN (${main || 0 }) ) bi2 
                         ON burger.id = bi2.burger_id
                         LEFT JOIN (
                             SELECT ROUND(AVG(SCORE), 1) AS score,
