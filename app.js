@@ -11,9 +11,13 @@ import models from './models';
 import db from './library/db';
 import { logger } from './library/log';
 
+<<<<<<< HEAD
 // jhkim_test2qweiruqwiruoewqiruewiofhjkasfhlkasnfljcmldszncmrnjlkasnfcgjkrszlrcls
 // jhkim_test2qweiruqwiruoewqiruewiofhjkasfhlkasnfljcmldszncmrnjlkasnfcgjkrszlrcls
 // jhkim_test2qweiruqwiruoewqiruewiofhjkasfhlkasnfljcmldszncmrnjlkasnfcgjkrszlrcls
+=======
+// jhkim_test2 정연진~@@#ㅃ@$#ㅃㄸㅉㅁㄸㅇㅁ
+>>>>>>> Etc: lhh rebgase test
 // 테이블이 존재하지 않으면 테이블 생성
 db.syncronize(models);
 
