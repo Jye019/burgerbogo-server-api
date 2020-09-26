@@ -11,7 +11,6 @@ import models from './models';
 import db from './library/db';
 import { logger } from './library/log';
 
-// TEST13123123asdfas
 // 테이블이 존재하지 않으면 테이블 생성
 db.syncronize(models);
 
