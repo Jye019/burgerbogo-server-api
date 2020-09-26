@@ -11,7 +11,9 @@ import models from './models';
 import db from './library/db';
 import { logger } from './library/log';
 
-// jhkim_test2
+// jhkim_test2qweiruqwiruoewqiruewiofhjkasfhlkasnfljcmldszncmrnjlkasnfcgjkrszlrcls
+// jhkim_test2qweiruqwiruoewqiruewiofhjkasfhlkasnfljcmldszncmrnjlkasnfcgjkrszlrcls
+// jhkim_test2qweiruqwiruoewqiruewiofhjkasfhlkasnfljcmldszncmrnjlkasnfcgjkrszlrcls
 // 테이블이 존재하지 않으면 테이블 생성
 db.syncronize(models);
 
