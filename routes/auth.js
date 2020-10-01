@@ -157,20 +157,10 @@ router.get('/confirmEmail', async (req, res) => {
     
 });
 
-// 이메일 인증 후 처리
-router.get('/:result', async (req, res) => {
-    try {
-        if (req.params.result === 'success') return res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
-        return res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
-    } catch (err) {
-        logger.error(err);
-        return res.status(500).json({ code: "ERROR", error: err.stack }); 
-    }
-});
-
 // 로그인 
 router.post('/login', async (req, res) => {
     try {
+        if(req.body.refreshToken) { return res.redirect(307, '/auth/renew'); }
         if(!req.body.email) return res.status(401).json({ code: "EMAIL_IS_MISSING" });
         if(!req.body.password) return res.status(401).json({ code: "PASSWORD_IS_MISSING" });
 
@@ -257,18 +247,23 @@ router.post('/change/password', verifyToken, passwordValidation, async(req, res)
         const {password, newPassword} = req.body;
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
+        const userInfo = await User.findOne({where : { id: req.atoken.id }})
         
-        if(password) {
-            const userInfo = await User.findOne({where : { id: req.atoken.id }})
-            
-            if(userInfo) {
+        if(!userInfo) {
+            // 없는 계정
+            return res.status(409).json({ code: "AUTH_NOT_EXIST" })
+        }
+
+        if(userInfo) {
+            if(password) {
                 if(!await bcrypt.compare(password, userInfo.password)) {
                     // 비밀번호 불일치 에러 코드
                     return res.status(419).json({ code: "AUTH_INVALID_PASSWORD" })
                 }
-            } else {
-                // 없는 계정
-                return res.status(409).json({ code: "AUTH_NOT_EXIST" })
+            }
+            if(await bcrypt.compare(newPassword, userInfo.password)) {
+                // 기존 비밀번호로 변경 불가 
+                return res.status(419).json({code: "AUTH_CURRENT_PASSWORD"})
             }
         }
 
@@ -290,5 +285,15 @@ router.post('/verify', verifyToken, (req, res) => { return res.status(200).json(
 // accessToken 갱신
 router.post('/renew', renewToken);
 
+// 이메일 인증 후 처리
+router.get('/:result', async (req, res) => {
+    try {
+        if (req.params.result === 'success') return res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
+        return res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
+    } catch (err) {
+        logger.error(err);
+        return res.status(500).json({ code: "ERROR", error: err.stack }); 
+    }
+});
 
 export default router;
