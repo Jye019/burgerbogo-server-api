@@ -31,45 +31,30 @@ exports.verifyToken = (req, res, next) => {
  * 유요한 경우 access Token 재발급
  * 만료된 경우 로그인 페이지로 이동
 */
-exports.renewToken = (req, res) => {
+exports.renewToken = async (req, res) => {
   try {
-    if(!req.headers.authorization) return res.status(401).json({ code: "TOKEN_IS_MISSING" });
-
-    jwt.verify(req.headers.authorization, process.env.JWT_SECRET || "xu5q!p1", async (err) => {
-      if (err) {
-        if (err.name === 'JsonWebTokenError') {
-          return res.status(419).json({ code: "AUTH_INVALID_TOKEN" });
-        }
-
-        // access token 재발급 또는 로그인 창으로 이동 
-        if(err.name === 'TokenExpiredError'){
-          const accessTokenJSON = jwt.decode(req.headers.authorization)
-          const refreshTokenJSON = jwt.decode(req.body.refreshToken)
-          const userInfo = await User.findOne({
-            where: {id: accessTokenJSON.id}
-          });
-
-          if(refreshTokenJSON.refreshkey === userInfo.refresh_key && Date.now() <= refreshTokenJSON.exp * 1000) {
-            const accessToken = jwt.sign({id: userInfo.id, nickname: userInfo.nickname, user_level: userInfo.user_level}, 
-                                        ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                                        { expiresIn: '10m', issuer: 'nsm',});
-            // return userData
-            const {password, verify_key, refresh_key, ...userData} = userInfo.dataValues;
-            return res.status(200).json({
-                code: "AUTH_SUCCESS",
-                data: {
-                    userData,
-                    accessToken,
-                }
-            });
-          }
-          
-          return res.status(419).json({ code: "AUTH_REFRESH_EXPIRED" });
-        }
-      }
-
-      return res.status(200).json({ code : "AUTH_TOKEN_NO_CHANGE" });
+    const {refreshToken} = req.body;
+    const refreshTokenJSON = jwt.decode(refreshToken)
+    const userInfo = await User.findOne({
+      where: {refresh_key: refreshTokenJSON.refreshkey}
     });
+
+    if(userInfo && Date.now() <= refreshTokenJSON.exp * 1000) {
+      const accessToken = jwt.sign({id: userInfo.id, nickname: userInfo.nickname, user_level: userInfo.user_level}, 
+                                  ( process.env.JWT_SECRET || 'xu5q!p1' ),
+                                  { expiresIn: '10m', issuer: 'nsm',});
+      // return userData
+      const {password, verify_key, refresh_key, ...userData} = userInfo.dataValues;
+      return res.status(200).json({
+          code: "AUTH_SUCCESS",
+          data: {
+              userData,
+              accessToken,
+              refreshToken
+          }
+      });
+    }
+    return res.status(419).json({ code: "AUTH_REFRESH_EXPIRED" });
   } catch (err) {
     logger.error(err);
     return res.status(500).json({ code: "ERROR", message: err.stack });
