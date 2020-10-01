@@ -16,7 +16,7 @@ router.get('/', async(req, res) => {
                                 price_combo,
                                 burger.id as id,
                                 burger.name as name, 
-                                brand.name as brand_name
+                                (select name from brands where id = brand_id) as brand_name
                         FROM burgers AS burger
                         LEFT JOIN (
                             SELECT burger_id, 
@@ -27,7 +27,7 @@ router.get('/', async(req, res) => {
                         ${(main)? `LEFT` : `RIGHT`} JOIN (
                             SELECT burger_id, 
                                    id 
-                            FROM burgers_have_ingredients 
+                            FROM burgers_have_ingredients npm 
                             WHERE ingredient_id IN (${main || 0 }) ) bi2 
                         ON burger.id = bi2.burger_id
                         LEFT JOIN (
@@ -37,8 +37,6 @@ router.get('/', async(req, res) => {
                             FROM reviews 
                             GROUP BY burger_id) AS review 
                         ON review.burger_id=burger.id
-                        INNER JOIN brands AS brand 
-                        ON burger.brand_id = brand.id 
                         WHERE bi.id IS NULL
                         AND COALESCE(score_cnt, 0) >= ${(order==='score')? 3: 0}
                         ORDER BY ${order} ${(order==='name' || order==='calorie')? 'ASC' : 'DESC'}`,
