@@ -240,9 +240,9 @@ router.post('/detail', verifyToken, async(req, res) => {
 
         return res.status(200).json({
             code: "AUTH_SUCCESS",
-            data: await User.findOne(
-                { attributes: {exclude : ["password", "refresh_key", "verify_key"]}},
-                { where: { id: req.atoken.id }
+            data: await User.findOne({ 
+                attributes: {exclude : ["password", "refresh_key", "verify_key"]},
+                where: { id: req.atoken.id }
             })
         });
     } catch (err) {
