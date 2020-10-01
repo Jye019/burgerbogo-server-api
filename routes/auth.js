@@ -59,7 +59,7 @@ router.post('/duplicate/email', dubplicateEmail, async (req, res) => {
     return res.status(200).json({ code: "AUTH_SUCCESS" })
 });
 
-router.post('/duplicate/nickname', async (req, res) => {
+router.post('/duplicate/nickname', verifyToken, async (req, res) => {
     if(await duplicateNickname(req, res)) {
         return res.status(409).json({ code: 'AUTH_DUPLICATED_NICKNAME'});
     }
