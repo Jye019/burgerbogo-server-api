@@ -199,6 +199,7 @@ router.post('/login', async (req, res) => {
                     // return userData
                     const {password, verify_key, refresh_key, ...userData} = userInfo.dataValues;
                     return res.status(200).json({
+                        code: "AUTH_SUCCESS",
                         data: {
                             userData,
                             accessToken,
@@ -237,7 +238,13 @@ router.post('/detail', verifyToken, async(req, res) => {
         await User.update({ nickname, gender, birth_year }, 
                           { where: { id: req.atoken.id }});
 
-        return res.status(200).json({"data": await User.findOne({ where: { id: req.atoken.id }})});
+        return res.status(200).json({
+            code: "AUTH_SUCCESS",
+            data: await User.findOne(
+                { attributes: {exclude : ["password", "refresh_key", "verify_key"]}},
+                { where: { id: req.atoken.id }
+            })
+        });
     } catch (err) {
         logger.error(err);
         return res.status(500).json({ code: "ERROR", message: err.stack });
@@ -245,7 +252,7 @@ router.post('/detail', verifyToken, async(req, res) => {
 });
 
 // 비밀번호 재설정
-router.post('/change', verifyToken, passwordValidation, async(req, res) => {
+router.post('/change/password', verifyToken, passwordValidation, async(req, res) => {
     try {
         const {password, newPassword} = req.body;
         const salt = bcrypt.genSaltSync(10);
