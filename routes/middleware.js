@@ -15,7 +15,7 @@ exports.verifyToken = (req, res, next) => {
           return res.status(419).json({ code: "AUTH_ACCESS_EXPIRED" });
         }
         if (err.name === 'JsonWebTokenError') {
-          return res.status(401).json({ code: "AUTH_INVALID_TOKEN" });
+          return res.status(419).json({ code: "AUTH_INVALID_TOKEN" });
         } 
       }
       req.atoken = decoded;
@@ -56,6 +56,7 @@ exports.renewToken = (req, res) => {
             // return userData
             const {password, verify_key, refresh_key, ...userData} = userInfo.dataValues;
             return res.status(200).json({
+                code: "AUTH_SUCCESS",
                 data: {
                     userData,
                     accessToken,
