@@ -257,11 +257,11 @@ router.post('/change', verifyToken, passwordValidation, async(req, res) => {
             if(userInfo) {
                 if(!await bcrypt.compare(password, userInfo.password)) {
                     // 비밀번호 불일치 에러 코드
-                    return res.status(409).json({ code: "AUTH_INVALID_PASSWORD" })
+                    return res.status(419).json({ code: "AUTH_INVALID_PASSWORD" })
                 }
             } else {
                 // 없는 계정
-                return res.status(409).json({ code: "AUTH_UNKNOWN ACCOUNT" })
+                return res.status(409).json({ code: "AUTH_NOT_EXIST" })
             }
         }
 
