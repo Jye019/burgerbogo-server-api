@@ -13,10 +13,10 @@ const router = express.Router();
 
 // 비밀번호 validation 
 const passwordValidation = (req, res, next) => {
-    if(!req.body.password) return res.status(401).json({ code: "PASSWORD_IS_MISSING" });
+    if(!(req.body.password || req.body.newPassword)) return res.status(401).json({ code: "PASSWORD_IS_MISSING" });
 
     const pwdRegExp = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
-    if (!pwdRegExp.test(req.body.password)) {
+    if (!(pwdRegExp.test(req.body.password) || pwdRegExp.test(req.body.newPassword))) {
         return res.status(409).json({ code: "AUTH_REGEXP_FAIL_PASSWORD" });
     }
     next();
@@ -37,12 +37,16 @@ const dubplicateEmail = async (req, res, next) => {
     }    
 }
 
+// 닉네임 중복 체크
 const duplicateNickname = async (req, res) => {
     try {
         if(!req.body.nickname) return res.status(401).json({ code: "NICKNAME_IS_MISSING" });
 
         // 닉네임 중복 체크
-        const user = await User.findOne({where: { nickname: req.body.nickname }});
+        const user = await User.findOne(
+            {where: { 
+               [sequelize.Op.and]: [{ nickname: req.body.nickname }, {id: { [sequelize.Op.ne]: req.atoken.id}}]
+            }});
         if(user) return true;
         return false;
     } catch (err) {
@@ -220,7 +224,7 @@ router.post('/detail', verifyToken, async(req, res) => {
         if(nickname) {
             // 닉네임 validation 체크
             const nicknameRegExp = /^[ㄱ-ㅎ가-힣0-9]{1,10}$/;
-            if(!nicknameRegExp.test(req.body.nickname)) {
+            if(!nicknameRegExp.test(nickname)) {
                 return res.status(409).json({ code: "AUTH_REGEXP_FAIL_NICKNAME" });
             }
 
@@ -233,7 +237,7 @@ router.post('/detail', verifyToken, async(req, res) => {
         await User.update({ nickname, gender, birth_year }, 
                           { where: { id: req.atoken.id }});
 
-        return res.status(200).json({"code": "AUTH_SUCCESS"})
+        return res.status(200).json({"data": await User.findOne({ where: { id: req.atoken.id }})});
     } catch (err) {
         logger.error(err);
         return res.status(500).json({ code: "ERROR", message: err.stack });
@@ -241,11 +245,26 @@ router.post('/detail', verifyToken, async(req, res) => {
 });
 
 // 비밀번호 재설정
-router.post('/reset-pw', verifyToken, passwordValidation, async(req, res) => {
+router.post('/change', verifyToken, passwordValidation, async(req, res) => {
     try {
+        const {password, newPassword} = req.body;
         const salt = bcrypt.genSaltSync(10);
-        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
         
+        if(password) {
+            const userInfo = await User.findOne({where : { id: req.atoken.id }})
+            
+            if(userInfo) {
+                if(!await bcrypt.compare(password, userInfo.password)) {
+                    // 비밀번호 불일치 에러 코드
+                    return res.status(200).json({ code: "INVALID_PASSWORD" })
+                }
+            } else {
+                // 없는 계정
+                return res.status(409).json({ code: "UNKNOWN ACCOUNT" })
+            }
+        }
+
         await User.update(
             { password: hashedPassword }, 
             { where : { id: req.atoken.id } }
