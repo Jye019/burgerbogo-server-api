@@ -27,7 +27,7 @@ router.get('/', async(req, res) => {
                         ${(main)? `LEFT` : `RIGHT`} JOIN (
                             SELECT burger_id, 
                                    id 
-                            FROM burgers_have_ingredients npm 
+                            FROM burgers_have_ingredients
                             WHERE ingredient_id IN (${main || 0 }) ) bi2 
                         ON burger.id = bi2.burger_id
                         LEFT JOIN (
