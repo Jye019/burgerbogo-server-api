@@ -274,9 +274,10 @@ router.post("/xlsx" /* , verifyToken, isDirector */, async (req, res) => {
   });
 });
 
-router.get('/autocomplete', async(req, res) => {
+// 버거 이름 자동완성 검색
+router.get('/autocomplete/:keyword', async(req, res) => {
   try {
-      const {keyword} = req.query;
+      const keyword = req.params.keyword;
 
       const list =  await db.sequelize.query(
                       `SELECT id, 
