@@ -3,12 +3,13 @@ import path from "path";
 import aws from "aws-sdk";
 import multer from "multer";
 import multerS3 from "multer-s3";
-import seq, { Op } from "sequelize";
+import seq, { Op, QueryTypes } from "sequelize";
 import xlsx from "xlsx";
-import { sequelize, Burger, TBurger, Brand, Review } from "../models";
+import db, { sequelize, Burger, TBurger, Brand, Review } from "../models";
 import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
 import middleware from "./middleware";
+import {logger} from '../library/log';
 
 const { verifyToken, isAdmin, isDirector } = middleware;
 
@@ -271,6 +272,39 @@ router.post("/xlsx" /* , verifyToken, isDirector */, async (req, res) => {
       return res.status(500).json({ code: "ERROR", message: err2 });
     }
   });
+});
+
+router.get('/autocomplete', async(req, res) => {
+  try {
+      const {keyword} = req.query;
+
+      const list =  await db.sequelize.query(
+                      `SELECT id, 
+                             name,
+                             (select name from brands where id = brand_id) as brand_name,
+                             price_single, 
+                             price_set,
+                             price_combo,
+                             image
+                      FROM burgers
+                      WHERE fn_search_csnt(name) like '%${keyword}%' 
+                      OR name like '%${keyword}%'`,
+                      { 
+                          type: QueryTypes.SELECT,
+                          nest: true,
+                      });
+
+      return res.status(200).json({
+          code: 'SUCCESS', 
+          data: list
+      })
+  } catch (err) {
+      logger.error(err);
+      return res.status(500).json({ 
+          code: "ERROR", 
+          error: err.stack
+      });
+  }
 });
 
 export default router;
