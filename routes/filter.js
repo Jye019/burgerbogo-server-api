@@ -43,7 +43,7 @@ router.get('/', async(req, res) => {
                         ON review.burger_id=burger.id
                         WHERE bi.id IS NULL
                         AND COALESCE(score_cnt, 0) >= ${(order==='score')? 3: 0}
-                        AND ( fn_search_csnt(name) like '%${keyword}%' OR name like '%${keyword}%' )
+                        AND ( fn_search_csnt(name) like '%${keyword || ''}%' OR name like '%${keyword || ''}%' )
                         ${ (brand)? `AND brand_id IN (${brand})` : ''}
                         ORDER BY ${order} ${(order==='score')? 'DESC' : 'ASC'}`,
                         { 
