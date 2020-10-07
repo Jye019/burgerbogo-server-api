@@ -9,7 +9,7 @@ import db, { sequelize, Burger, TBurger, Brand, Review } from "../models";
 import { parseQueryString } from "../library/parsing";
 import awscon from "../config/awsconfig.json";
 import middleware from "./middleware";
-import {logger} from '../library/log';
+import { logger } from "../library/log";
 
 const { verifyToken, isAdmin, isDirector } = middleware;
 
@@ -168,16 +168,24 @@ router.get("/", async (req, res) => {
       return res
         .status(406)
         .json({ code: parsed.code, message: parsed.message });
-    const found = await Burger.findAll({ ...parsed, raw: true });
+    const found = await Burger.findAll({ ...parsed, raw: true, nest: true });
     let withScore = {};
     if (req.query.id) {
       const score = await sequelize.query(
         "SELECT AVG(score) AS score FROM reviews WHERE burger_id=? AND score IS NOT NULL",
-        { type: seq.QueryTypes.SELECT, replacements: [req.query.id] }
+        {
+          type: seq.QueryTypes.SELECT,
+          replacements: [req.query.id],
+          nest: true,
+        }
       );
       const flavor = await sequelize.query(
         "SELECT AVG(sweet) AS sweet,AVG(sour) AS sour,AVG(salty) AS salty,AVG(spicy) AS spicy,AVG(greasy) AS greasy FROM reviews WHERE burger_id=? AND sweet IS NOT NULL",
-        { type: seq.QueryTypes.SELECT, replacements: [req.query.id] }
+        {
+          type: seq.QueryTypes.SELECT,
+          replacements: [req.query.id],
+          nest: true,
+        }
       );
       withScore = Object.assign(found[0], score[0], flavor[0]);
       return res.status(200).json({ data: [withScore] });
@@ -275,12 +283,12 @@ router.post("/xlsx" /* , verifyToken, isDirector */, async (req, res) => {
 });
 
 // 버거 이름 자동완성 검색
-router.get('/autocomplete/:keyword', async(req, res) => {
+router.get("/autocomplete/:keyword", async (req, res) => {
   try {
-      const keyword = req.params.keyword;
+    const keyword = req.params.keyword;
 
-      const list =  await db.sequelize.query(
-                      `SELECT id, 
+    const list = await db.sequelize.query(
+      `SELECT id, 
                              name,
                              (select name from brands where id = brand_id) as brand_name,
                              price_single, 
@@ -290,21 +298,22 @@ router.get('/autocomplete/:keyword', async(req, res) => {
                       FROM burgers
                       WHERE fn_search_csnt(name) like '%${keyword}%' 
                       OR name like '%${keyword}%'`,
-                      { 
-                          type: QueryTypes.SELECT,
-                          nest: true,
-                      });
+      {
+        type: QueryTypes.SELECT,
+        nest: true,
+      }
+    );
 
-      return res.status(200).json({
-          code: 'SUCCESS', 
-          data: list
-      })
+    return res.status(200).json({
+      code: "SUCCESS",
+      data: list,
+    });
   } catch (err) {
-      logger.error(err);
-      return res.status(500).json({ 
-          code: "ERROR", 
-          error: err.stack
-      });
+    logger.error(err);
+    return res.status(500).json({
+      code: "ERROR",
+      error: err.stack,
+    });
   }
 });
 
