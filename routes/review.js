@@ -110,14 +110,17 @@ router.delete("/", verifyToken, async (req, res) => {
 // 내가 쓴 리뷰 조회
 router.get("/my", verifyToken, async (req, res) => {
   try {
-    const list = await Review.findAll(
-      {attributes: {
-          include: [[seq.literal(`(SELECT name FROM burgers  WHERE id = burger_id)`), 'burger_name']]
-      }},
-      {where: {user_id: req.body.id || req.body.atoken }}
-    );
+    const list = await Review.findAll({
+      attributes: {
+          include: [[seq.literal(`(SELECT name FROM burgers  WHERE id = burger_id)`), 'burger_name']]},
+      where: {
+        [seq.Op.or]: [{user_id: req.query.id}, {user_id : req.atoken.id }]}
+    });
 
-    res.status(200).json({data:list});
+    res.status(200).json({
+      code: "REVIEW_SUCESS",
+      data:list
+    });
   } catch (err) {
     logger.error(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
