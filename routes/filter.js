@@ -7,7 +7,39 @@ const router = express.Router();
 
 router.get('/', async(req, res) => {
     try {
-        const {allergy, main, order, brand, keyword} = req.query;
+        const {order} = req.query;
+        let {allergy, brand, main, keyword} = req.query;
+
+        if( allergy ) {
+            allergy = allergy.split(",");
+            allergy.forEach(num => {
+                if(Number.isNaN(parseInt(num, 10)))
+                    return res.status(406).json({code: "FILTER_UNEXPECTED_ALLERGY"});
+            });  
+        }                                                                                                                                                                                                                                                                                                                                                                                                           
+
+        if( main ) {
+            main = main.split(",");
+            main.forEach(num => {
+                if(Number.isNaN(parseInt(num, 10)))
+                    return res.status(406).json({code: "FILTER_UNEXPECTED_MAIN"});
+            });  
+        }
+
+        if( brand ) {
+            brand = brand.split(",");
+            brand.forEach(num => {
+                if(Number.isNaN(parseInt(num, 10)))
+                    return res.status(406).json({code: "FILTER_UNEXPECTED_BRAND"});
+            });  
+        }
+
+        if( !order ) 
+            return res.status(406).json({code: "FILTER_ORDER_MISSING"});
+        if( !(order === "name" || order === "score" || order === "released_at") ) 
+            return res.status(406).json({code: "FILTER_UNEXPECTED_ORDER"});
+        if( keyword ) 
+            keyword = keyword.replace(/(\s*)/g, "");
 
         const list =  await db.sequelize.query(
                         `SELECT DISTINCT image, 
