@@ -12,11 +12,16 @@
     "timezone": "+09:00"
   },
   "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "username": "admin",
+    "password": "shTmfah1!",
+    "database": "test",
+    "host": "nsm-burgerbogo.civjzz8g5pvm.ap-northeast-2.rds.amazonaws.com",
+    "dialect": "mysql",
+    "dialectOptions": {
+      "dateStrings": true,
+      "typeCast": true
+    },
+    "timezone": "+09:00"
   },
   "production": {
     "username": "root",
