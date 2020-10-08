@@ -263,7 +263,7 @@ router.post('/change/password', verifyToken, passwordValidation, async(req, res)
             }
             if(await bcrypt.compare(newPassword, userInfo.password)) {
                 // 기존 비밀번호로 변경 불가 
-                return res.status(419).json({code: "AUTH_CURRENT_PASSWORD"})
+                return res.status(409).json({code: "AUTH_CURRENT_PASSWORD"})
             }
         }
 
