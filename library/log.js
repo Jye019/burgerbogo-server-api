@@ -16,7 +16,7 @@ const logger = winston.createLogger({
     ),
 })
 
-if(process.env.NODE_ENV !== 'production') {
+if(process.env.NODE_ENV === 'development') {
     logger.add(new winston.transports.Console({format: timestamp({format: 'YYYY-MM-DD HH:mm:ss'})}));
     logger.add(new DailyRotateFile({ filename: path.join(__dirname, `/../../logs/dev/dev_%DATE%.log`), datePattern: 'YYYYMMDD'}));
 }

@@ -21,7 +21,8 @@
       "dateStrings": true,
       "typeCast": true
     },
-    "timezone": "+09:00"
+    "timezone": "+09:00",
+    "logging": false
   },
   "production": {
     "username": "root",
