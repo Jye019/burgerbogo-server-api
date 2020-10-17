@@ -1,9 +1,8 @@
 import express from "express";
 import seq from "sequelize";
-import { Review, Burger, User } from "../models";
-import { parseQueryString } from "../library/parsing";
+import { Review, User } from "../models";
 import middleware from "./middleware";
-import {logger} from '../library/log';
+import { logger } from "../library/log";
 
 const { verifyToken } = middleware;
 
@@ -11,6 +10,34 @@ const router = express.Router();
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
+
+// 최신리뷰 조회
+router.get("/recent/:limit", async (req, res) => {
+  try {
+    const result = await Review.scope("newReview").findAll({
+      offset: 0,
+      limit: req.params.limit * 1,
+    });
+    res.status(200).json({
+      data: result,
+    });
+  } catch (err) {
+    res.status(500).json({ code: "ERROR", error: err.stack });
+  }
+});
+
+// 리뷰 조회
+router.get("/:limit/:page", async (req, res) => {
+  try {
+    const result = await Review.findAll({
+      limit: req.params.limit * 1,
+      offset: (req.params.page - 1) * req.params.limit,
+    });
+    res.status(200).json({ data: result });
+  } catch (err) {
+    res.status(500).json({ code: "ERROR", error: err.stack });
+  }
+});
 
 // 리뷰 추가
 router.post("/", verifyToken, async (req, res) => {
@@ -24,39 +51,6 @@ router.post("/", verifyToken, async (req, res) => {
         message: err["errors"][0]["message"],
       });
     }
-    res.status(500).json({ code: "ERROR", error: err.stack });
-  }
-});
-
-// 리뷰 조회
-router.get("/", async (req, res) => {
-  try {
-    const parsed = parseQueryString(res, req.query, Review, {
-      Burger,
-      User,
-    });
-    if (parsed.error)
-      return res
-        .status(406)
-        .json({ code: parsed.code, message: parsed.message });
-    const result = await Review.findAll(parsed);
-    res.status(200).json({ data: result });
-  } catch (err) {
-    res.status(500).json({ code: "ERROR", error: err.stack });
-  }
-});
-
-// 최신리뷰 조회
-router.get("/recent/:limit", async (req, res) => {
-  try {
-    const result = await Review.scope("newReview").findAll({
-      offset: 0,
-      limit: req.params.limit * 1,
-    });
-    res.status(200).json({
-      data: result,
-    });
-  } catch (err) {
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -108,24 +102,21 @@ router.delete("/", verifyToken, async (req, res) => {
 });
 
 // 내가 쓴 리뷰 조회
-router.get("/my", verifyToken, async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   try {
-    const list = await Review.findAll({
-      attributes: {
-          include: [[seq.literal(`(SELECT name FROM burgers  WHERE id = burger_id)`), 'burger_name']]},
-      where: {
-        [seq.Op.or]: [{user_id: req.query.id}, {user_id : req.atoken.id }]}
+    const list = await Review.scope("myReview").findAll({
+      where: { user_id: req.atoken.id },
     });
 
     res.status(200).json({
       code: "REVIEW_SUCESS",
-      data:list
+      data: list,
     });
   } catch (err) {
     logger.error(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
-})
+});
 
 router.get("/test", async (req, res) => {
   const result = await Review.findAll({

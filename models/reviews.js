@@ -85,6 +85,23 @@ module.exports = function (sequelize, DataTypes) {
         },
       ],
     });
+    reviews.addScope("myReview", {
+      attributes: ["id", "score", "content"],
+      include: [
+        {
+          model: models.Burger,
+          attributes: [
+            "id",
+            "name",
+            "price_single",
+            "price_set",
+            "price_combo",
+            "image",
+          ],
+          include: [{ model: models.Brand, attributes: ["name"] }],
+        },
+      ],
+    });
   };
 
   return reviews;
