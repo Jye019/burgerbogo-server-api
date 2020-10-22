@@ -90,6 +90,7 @@ router.get("/today", async (req, res) => {
         [Op.or]: filter,
       },
       raw: true,
+      nest: true,
     });
     for (let i = 0; i < filter.length; i += 1) {
       const getScore = await sequelize.query(
@@ -161,7 +162,7 @@ router.get("/:id", async (req, res) => {
   try {
     let result = await Burger.findOne({
       attributes: {
-        exclude: ["released_at", "created_at", "updated_at", "deleted_at"],
+        exclude: ["created_at", "updated_at", "deleted_at"],
       },
       where: { id: req.params.id },
       raw: true,

@@ -27,11 +27,12 @@ router.get("/recent/:limit", async (req, res) => {
 });
 
 // 리뷰 조회
-router.get("/:limit/:page", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const result = await Review.findAll({
-      limit: req.params.limit * 1,
-      offset: (req.params.page - 1) * req.params.limit,
+      limit: req.query.limit * 1,
+      offset: (req.query.page - 1) * req.query.limit,
+      where: { burger_id: req.query.burgerId },
     });
     res.status(200).json({ data: result });
   } catch (err) {

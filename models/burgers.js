@@ -130,6 +130,17 @@ module.exports = function (sequelize, DataTypes) {
       ],
       include: [{ model: models.Brand, attributes: ["name"] }],
     });
+    burgers.addScope("burgersToday", {
+      attributes: [
+        "id",
+        "name",
+        "price_single",
+        "price_set",
+        "price_combo",
+        "image",
+      ],
+      include: [{ model: models.Brand, attributes: ["name"] }],
+    });
   };
 
   return burgers;
