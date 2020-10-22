@@ -3,6 +3,7 @@ import seq from "sequelize";
 import { Brand } from "../models";
 import { parseQueryString } from "../library/parsing";
 import middleware from "./middleware";
+import { logger } from "../library/log";
 
 const { verifyToken, isAdmin } = middleware;
 
@@ -17,6 +18,7 @@ router.post("/", verifyToken, isAdmin, async (req, res) => {
     await Brand.create(req.body);
     res.status(200).json({});
   } catch (err) {
+    logger.log(err);
     if (err instanceof seq.ValidationError) {
       return res.status(400).json({
         code: "SEQUELIZE_VALIDATION_ERROR",
@@ -38,6 +40,7 @@ router.get("/", async (req, res) => {
     const result = await Brand.findAll(parsed);
     res.status(200).json({ data: result });
   } catch (err) {
+    logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -50,6 +53,7 @@ router.put("/", verifyToken, isAdmin, async (req, res) => {
       res.status(200).json({});
     } else res.status(400).json({ code: "BRAND_INVALID_ID" });
   } catch (err) {
+    logger.log(err);
     if (err instanceof seq.ValidationError) {
       return res.status(400).json({
         code: "SEQUELIZE_VALIDATION_ERROR",
@@ -67,6 +71,7 @@ router.delete("/", verifyToken, isAdmin, async (req, res) => {
       res.status(200).json({});
     } else res.status(400).json({ code: "BRAND_INVALID_ID" });
   } catch (err) {
+    logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });

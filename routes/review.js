@@ -22,6 +22,7 @@ router.get("/recent/:limit", async (req, res) => {
       data: result,
     });
   } catch (err) {
+    logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -36,6 +37,7 @@ router.get("/", async (req, res) => {
     });
     res.status(200).json({ data: result });
   } catch (err) {
+    logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -46,6 +48,7 @@ router.post("/", verifyToken, async (req, res) => {
     await Review.create(req.body);
     res.status(200).json({});
   } catch (err) {
+    logger.log(err);
     if (err instanceof seq.ValidationError) {
       return res.status(400).json({
         code: "SEQUELIZE_VALIDATION_ERROR",
@@ -72,6 +75,7 @@ router.put("/", verifyToken, async (req, res) => {
       }
     } else res.status(400).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
+    logger.log(err);
     if (err instanceof seq.ValidationError) {
       return res.status(400).json({
         code: "SEQUELIZE_VALIDATION_ERROR",
@@ -98,6 +102,7 @@ router.delete("/", verifyToken, async (req, res) => {
       }
     } else res.status(400).json({ code: "REVIEW_INVALID_ID" });
   } catch (err) {
+    logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });

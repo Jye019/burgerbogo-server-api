@@ -66,6 +66,7 @@ router.post("/today", verifyToken, isAdmin, async (req, res) => {
       res.status(400).json({ code: "BURGER_INVALID_ID" });
     }
   } catch (err) {
+    logger.log(err);
     if (err instanceof seq.ValidationError) {
       return res.status(400).json({
         code: "SEQUELIZE_VALIDATION_ERROR",
@@ -105,6 +106,7 @@ router.get("/today", async (req, res) => {
     }
     res.status(200).json({ data: result });
   } catch (err) {
+    logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -116,6 +118,7 @@ router.delete("/today", verifyToken, isAdmin, async (req, res) => {
       res.status(200).json({});
     } else res.status(400).json({ code: "BURGER_TODAY_INVALID_ID" });
   } catch (err) {
+    logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -126,6 +129,7 @@ router.delete("/today", verifyToken, isAdmin, async (req, res) => {
 router.post("/image", verifyToken, isDirector, (req, res) => {
   upload.single("image")(req, res, (err) => {
     if (err) {
+      logger.log(err);
       return res.status(500).json({ code: "BURGER_IMAGE_UPLOAD" });
     }
     console.log(req.test); // ★★★★★
@@ -147,6 +151,7 @@ router.post("/", verifyToken, isDirector, async (req, res) => {
       res.status(400).json({ code: "BRAND_INVALID_ID" });
     }
   } catch (err) {
+    logger.log(err);
     if (err instanceof seq.ValidationError) {
       return res.status(400).json({
         code: "SEQUELIZE_VALIDATION_ERROR",
@@ -178,6 +183,7 @@ router.get("/:id", async (req, res) => {
     result = { ...result, ...score[0] };
     return res.status(200).json({ data: result });
   } catch (err) {
+    logger.log(err);
     return res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -190,6 +196,7 @@ router.put("/", verifyToken, isDirector, async (req, res) => {
       res.status(200).json({});
     } else res.status(400).json({ code: "BURGER_INVALID_ID" });
   } catch (err) {
+    logger.log(err);
     if (err instanceof seq.ValidationError) {
       return res.status(400).json({
         code: "SEQUELIZE_VALIDATION_ERROR",
@@ -208,6 +215,7 @@ router.delete("/", verifyToken, isDirector, async (req, res) => {
       res.status(200).json({});
     } else res.status(400).json({ code: "BURGER_INVALID_ID" });
   } catch (err) {
+    logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
   }
 });
@@ -219,6 +227,7 @@ router.post("/xlsx" /* , verifyToken, isDirector */, async (req, res) => {
   uploadXlsx.single("xlsx")(req, res, async (err) => {
     try {
       if (err) {
+        logger.log(err);
         return res
           .status(500)
           .json({ code: "BURGER_XLSX_UPLOAD", message: err });
@@ -231,6 +240,7 @@ router.post("/xlsx" /* , verifyToken, isDirector */, async (req, res) => {
       const result = await Burger.bulkCreate(parsed /* , { validate: true } */);
       if (result) return res.status(200).json({});
     } catch (err2) {
+      logger.log(err2);
       if (err2 instanceof seq.ForeignKeyConstraintError) {
         return res.status(400).json({
           code: "SEQUELIZE_WRONG_FOREIGN_KEY",
