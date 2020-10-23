@@ -16,7 +16,7 @@ describe('# [ AUTH ] 회원가입', () =>{
     describe('POST /auth/join', () => {
         /**
          * /auth/join로 POST 요청이 오는 경우
-         */
+         */                                                                                                                 
         it('비밀번호 값 필요', done => {
             chai.request(url)
                 .post('/auth/join')
@@ -137,7 +137,6 @@ describe('# [ AUTH ] 인증 이메일 재전송', () =>{
             chai.request(url)
                 .post('/auth/send/address')
                 .set('content-type', 'application/json')
-                .send({})
                 .end((err, res) => {
                     if(err) 
                         done(err);
@@ -151,7 +150,7 @@ describe('# [ AUTH ] 인증 이메일 재전송', () =>{
                 .post('/auth/send/address')
                 .set('content-type', 'application/json')
                 .send({email:'jihyekim019@gmail.com'})
-                .end((err, res) => {
+                .end((err, res, req) => {
                     if(err) 
                         done(err);
                     expect(JSON.parse(res.text).code).to.equal('AUTH_SUCCESS')
@@ -162,15 +161,17 @@ describe('# [ AUTH ] 인증 이메일 재전송', () =>{
     })
 });  
 
+const key = User.findOne({
+    attribute: ['verify_key'],
+    where: {email: 'jihyekim019@gmail.com'}
+}).then(console.log(key));
 
 describe('# [ AUTH ] 이메일 인증 확인', () =>{
-    describe('POST /auth/confirmEmail', () => {
+    describe('POST /auth/confirmEmail', async () => {
         it('이메일 인증 실패', done => {
             chai.request(url)
                 .get('/auth/confirmEmail')
-                .query({
-                    key: "9486e45545533cb89ae427fb618ff215d1d8648cdd592134ieU5jr3dy6gqYm86WCe8ddSFm4DyYssYuIHwzP8s0dEAY%2F"
-                })
+                .query({key: key})
                 .end((err, req, res) => {
                     if(err) 
                         done(err);
@@ -181,3 +182,20 @@ describe('# [ AUTH ] 이메일 인증 확인', () =>{
         });
     })
 });  
+
+describe('# [ AUTH ] 유저 리스트 조회', () =>{
+    describe('get /auth/list', () => {
+        it('관리자 확인', done => {
+            chai.request(url)
+                .post('/auth/login')
+                .set('content-type', 'application/json')
+                .send({email: "nsm200704@gmail.com", password: "shTmfah1"})
+                .end((err, res) => {
+                    if(err) 
+                        done(err);
+                    expect(JSON.parse(res.text).code).to.equal('AUTH_SUCCESS')
+                    expect(req.atoken).to.have.deep.property('atok en',{user_level: 10000})
+                 });
+        })
+    })
+})

@@ -7,7 +7,7 @@ import { User } from '../models';
 import middleware from './middleware';
 import {logger} from '../library/log';
 
-const { sendEmail, verifyToken, renewToken} = middleware;
+const { sendEmail, verifyToken, renewToken, isAdmin} = middleware;
 
 const router = express.Router();
 
@@ -154,7 +154,17 @@ router.get('/confirmEmail', async (req, res) => {
         logger.error(err);
         return res.status(500).json({ code: "ERROR", error: err.stack });
     }
-    
+});
+
+// 이메일 인증 후 처리
+router.get('/:result', async (req, res) => {
+    try {
+        if (req.params.result === 'success') return res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
+        return res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
+    } catch (err) {
+        logger.error(err);
+        return res.status(500).json({ code: "ERROR", error: err.stack }); 
+    }
 });
 
 // 로그인 
@@ -279,21 +289,34 @@ router.post('/change/password', verifyToken, passwordValidation, async(req, res)
     }
 });
 
+// user 전체 리스트
+router.get("/list", isAdmin, async (req, res) => {
+    try {
+        const list = await User.findAll({
+            attributes: {exclude: ['password', 'verify_key', 'refresh_key']},
+        });
+
+        return res.status(200).json({ 
+            data: list,
+            code: "AUTH_SUCCESS" 
+        })
+    } catch (err) {
+        logger.error(err);
+        return res.status(500).json({ code: "ERROR", message: err.stack });
+    }
+    
+});
+
+// user 상세
+
+// user 탈퇴 
+
 // accessToken 확인
 router.post('/verify', verifyToken, (req, res) => { return res.status(200).json({code: "AUTH_SUCCESS"}) });
 
 // accessToken 갱신
 router.post('/renew', renewToken);
 
-// 이메일 인증 후 처리
-router.get('/:result', async (req, res) => {
-    try {
-        if (req.params.result === 'success') return res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
-        return res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
-    } catch (err) {
-        logger.error(err);
-        return res.status(500).json({ code: "ERROR", error: err.stack }); 
-    }
-});
+
 
 export default router;
