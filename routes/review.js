@@ -34,6 +34,7 @@ router.get("/", async (req, res) => {
       limit: req.query.limit * 1,
       offset: (req.query.page - 1) * req.query.limit,
       where: { burger_id: req.query.burgerId },
+      order: [["created_at", "desc"]],
     });
     res.status(200).json({ data: result });
   } catch (err) {
