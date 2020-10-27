@@ -109,7 +109,7 @@ router.delete("/", verifyToken, async (req, res) => {
 });
 
 // 내가 쓴 리뷰 조회
-router.get("/", verifyToken, async (req, res) => {
+router.get("/my", verifyToken, async (req, res) => {
   try {
     const list = await Review.scope("myReview").findAll({
       where: { user_id: req.atoken.id },
