@@ -21,7 +21,7 @@ describe('# [ AUTH ] 회원가입', () =>{
             chai.request(url)
                 .post('/auth/join')
                 .set('content-type', 'application/json')
-                .send({email:'jihyekim019@gmail.com'})
+                .send({email:'nsm200704@gmail.com'})
                 .end((err, res) => {
                     if(err) 
                         done(err);
@@ -47,7 +47,7 @@ describe('# [ AUTH ] 회원가입', () =>{
             chai.request(url)
                 .post('/auth/join')
                 .set('content-type', 'application/json')
-                .send({email:'jihyekim019@gmail.com',
+                .send({email:'nsm200704@gmail.com',
                     password: 'shTmfah1!'})
                 .end((err, res) => {
                     if(err) 
@@ -61,7 +61,7 @@ describe('# [ AUTH ] 회원가입', () =>{
             chai.request(url)
                 .post('/auth/join')
                 .set('content-type', 'application/json')
-                .send({email:'jihyekim019@gmail.com',
+                .send({email:'nsm200704@gmail.com',
                     password: 'shTm'})
                 .end((err, res) => {
                     if(err) 
@@ -75,7 +75,7 @@ describe('# [ AUTH ] 회원가입', () =>{
             chai.request(url)
                 .post('/auth/join')
                 .set('content-type', 'application/json')
-                .send({email:'jihyekim019@gmail.com',
+                .send({email:'nsm200704@gmail.com',
                     password: '123456789012345678901'})
                 .end((err, res) => {
                     if(err) 
@@ -103,7 +103,7 @@ describe('# [ AUTH ] 회원가입', () =>{
             chai.request(url)
                 .post('/auth/join')
                 .set('content-type', 'application/json')
-                .send({email:'jihyekim019@gmail.com',
+                .send({email:'nsm200704@gmail.com',
                        password: 'shTmfah1'})
                 .end((err, res) => {
                     if(err) 
@@ -117,7 +117,7 @@ describe('# [ AUTH ] 회원가입', () =>{
             chai.request(url)
                 .post('/auth/join')
                 .set('content-type', 'application/json')
-                .send({email:'jihyekim019@gmail.com',
+                .send({email:'nsm200704@gmail.com',
                        password: 'shTmfah1'})
                 .end((err, res) => {
                     if(err) 
@@ -149,34 +149,12 @@ describe('# [ AUTH ] 인증 이메일 재전송', () =>{
             chai.request(url)
                 .post('/auth/send/address')
                 .set('content-type', 'application/json')
-                .send({email:'jihyekim019@gmail.com'})
+                .send({email:'nsm200704@gmail.com'})
                 .end((err, res, req) => {
                     if(err) 
                         done(err);
                     expect(JSON.parse(res.text).code).to.equal('AUTH_SUCCESS')
                     expect(res.status).to.equal(200)
-                    done();
-                 });
-        });
-    })
-});  
-
-const key = User.findOne({
-    attribute: ['verify_key'],
-    where: {email: 'jihyekim019@gmail.com'}
-}).then(console.log(key));
-
-describe('# [ AUTH ] 이메일 인증 확인', () =>{
-    describe('POST /auth/confirmEmail', async () => {
-        it('이메일 인증 실패', done => {
-            chai.request(url)
-                .get('/auth/confirmEmail')
-                .query({key: key})
-                .end((err, req, res) => {
-                    if(err) 
-                        done(err);
-                    expect(res).to.redirect
-                    expect(req).to.have.param('result')
                     done();
                  });
         });
@@ -190,11 +168,11 @@ describe('# [ AUTH ] 유저 리스트 조회', () =>{
                 .post('/auth/login')
                 .set('content-type', 'application/json')
                 .send({email: "nsm200704@gmail.com", password: "shTmfah1"})
-                .end((err, res) => {
+                .end((err, res, req) => {
                     if(err) 
                         done(err);
                     expect(JSON.parse(res.text).code).to.equal('AUTH_SUCCESS')
-                    expect(req.atoken).to.have.deep.property('atok en',{user_level: 10000})
+                    expect(req.atoken).to.have.deep.property('atoken',{user_level: 10000})
                  });
         })
     })
