@@ -169,8 +169,15 @@ router.get("/:id", async (req, res) => {
       attributes: {
         exclude: ["created_at", "updated_at", "deleted_at"],
       },
+      include: [
+        {
+          model: Brand,
+          attributes: { exclude: ["created_at", "updated_at", "deleted_at"] },
+        },
+      ],
       where: { id: req.params.id },
       raw: true,
+      nest: true,
     });
     const score = await sequelize.query(
       `SELECT AVG(score) AS score,AVG(sweet) AS sweet,AVG(sour) AS sour,AVG(salty) AS salty,AVG(spicy) AS spicy,AVG(greasy) AS greasy FROM reviews WHERE burger_id=?`,
