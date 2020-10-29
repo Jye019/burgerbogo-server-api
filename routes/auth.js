@@ -156,17 +156,6 @@ router.get('/confirmEmail', async (req, res) => {
     }
 });
 
-// 이메일 인증 후 처리
-router.get('/:result', async (req, res) => {
-    try {
-        if (req.params.result === 'success') return res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
-        return res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
-    } catch (err) {
-        logger.error(err);
-        return res.status(500).json({ code: "ERROR", error: err.stack }); 
-    }
-});
-
 // 로그인 
 router.post('/login', async (req, res) => {
     try {
@@ -290,15 +279,15 @@ router.post('/change/password', verifyToken, passwordValidation, async(req, res)
 });
 
 // user 전체 리스트
-router.get("/list", isAdmin, async (req, res) => {
+router.get("/list", verifyToken, isAdmin, async (req, res) => {
     try {
         const list = await User.findAll({
             attributes: {exclude: ['password', 'verify_key', 'refresh_key']},
         });
 
         return res.status(200).json({ 
-            data: list,
-            code: "AUTH_SUCCESS" 
+            code: "AUTH_SUCCESS", 
+            data: list
         })
     } catch (err) {
         logger.error(err);
@@ -308,8 +297,40 @@ router.get("/list", isAdmin, async (req, res) => {
 });
 
 // user 상세
+router.get("/read/:id", verifyToken, async (req, res) => {
+    try {
+        const user = await User.findOne({
+            attributes: {exclude: ['password', 'verify_key', 'refresh_key']},
+            where: { id: req.params.id } 
+        });
+
+        if(user) {
+            return res.status(200).json({
+                code: "AUTH_SUCCESS",
+                data: user
+            })
+        }
+        return res.status(409).json({ code: "AUTH_NOT_EXIST" });
+    } catch (err) {
+        logger.error(err);
+        return res.status(500).json({ code: "ERROR", message: err.stack });
+    }
+});
 
 // user 탈퇴 
+router.post("/unsubscribe", verifyToken, async (req, res) => {
+    try {
+        const user = await User.findOne({ where: { email: req.body.email } });
+        if(user) {
+            await User.destroy({ where: { email: req.body.email } });
+            return res.status(200).json({code: "AUTH_SUCCESS"});
+        } 
+        return res.status(409).json({ code: "AUTH_NOT_EXIST" });
+    } catch (err) {
+        logger.error(err);
+        return res.status(500).json({ code: "ERROR", message: err.stack });
+    }
+});
 
 // accessToken 확인
 router.post('/verify', verifyToken, (req, res) => { return res.status(200).json({code: "AUTH_SUCCESS"}) });
@@ -317,6 +338,15 @@ router.post('/verify', verifyToken, (req, res) => { return res.status(200).json(
 // accessToken 갱신
 router.post('/renew', renewToken);
 
-
+// 이메일 인증 후 처리
+router.get('/:result', async (req, res) => {
+    try {
+        if (req.params.result === 'success') return res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
+        return res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
+    } catch (err) {
+        logger.error(err);
+        return res.status(500).json({ code: "ERROR", error: err.stack }); 
+    }
+});
 
 export default router;
