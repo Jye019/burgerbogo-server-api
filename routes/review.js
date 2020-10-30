@@ -35,6 +35,7 @@ router.get("/", async (req, res) => {
       offset: (req.query.page - 1) * req.query.limit,
       where: { burger_id: req.query.burgerId },
       order: [["created_at", "desc"]],
+      include: [{ model: User, attributes: ["id", "nickname"] }],
     });
     res.status(200).json({ data: result });
   } catch (err) {

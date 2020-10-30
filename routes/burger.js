@@ -165,6 +165,10 @@ router.post("/", verifyToken, isDirector, async (req, res) => {
 // 버거 조회
 router.get("/:id", async (req, res) => {
   try {
+    const reviewNum = await sequelize.query(
+      `SELECT COUNT(*) as cnt FROM reviews WHERE burger_id=?`,
+      { replacements: [req.params.id], type: QueryTypes.SELECT, raw: true }
+    );
     let result = await Burger.findOne({
       attributes: {
         exclude: ["created_at", "updated_at", "deleted_at"],
@@ -187,7 +191,7 @@ router.get("/:id", async (req, res) => {
         raw: true,
       }
     );
-    result = { ...result, ...score[0] };
+    result = { ...result, ...score[0], review_num: reviewNum[0].cnt };
     return res.status(200).json({ data: result });
   } catch (err) {
     logger.log(err);
