@@ -119,7 +119,7 @@ router.get("/today", async (req, res) => {
       for (let j = 0; j < score.length; j += 1) {
         if (result[i].id === score[j].burger_id) {
           console.log("ㅁㄴㅇㅁㄴㅇㄴㅁㅇㄴㅁㅇ");
-          result[i].score = score[j].score;
+          result[i].score = Math.round(score[j].score * 10) / 10;
         }
       }
     }
