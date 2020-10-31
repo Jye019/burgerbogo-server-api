@@ -124,7 +124,7 @@ router.get("/today", async (req, res) => {
       }
     }
     console.log(result);
-    res.status(200).json(result);
+    res.status(200).json({ data: result });
   } catch (err) {
     logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
