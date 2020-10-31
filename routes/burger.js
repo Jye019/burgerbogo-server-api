@@ -5,7 +5,7 @@ import multer from "multer";
 import multerS3 from "multer-s3";
 import seq, { Op, QueryTypes } from "sequelize";
 import xlsx from "xlsx";
-import db, { sequelize, Burger, TBurger, Brand } from "../models";
+import db, { sequelize, Burger, TBurger, Review, Brand } from "../models";
 import awscon from "../config/awsconfig.json";
 import middleware from "./middleware";
 import { logger } from "../library/log";
@@ -79,7 +79,51 @@ router.post("/today", verifyToken, isAdmin, async (req, res) => {
 // 오늘의버거 조회
 router.get("/today", async (req, res) => {
   try {
-    res.status(200).json({});
+    let tbList = await TBurger.findAll({
+      attributes: [["burger_id", "id"]],
+      raw: true,
+    });
+    // tbList = tbList.map((e) => e.burger_id);
+    console.log(tbList);
+
+    const result = await Burger.findAll({
+      attributes: [
+        "id",
+        "name",
+        "image",
+        "price_single",
+        "price_set",
+        "price_combo",
+      ],
+      where: { [Op.or]: tbList },
+      include: [{ model: Brand, attributes: ["name"] }],
+      raw: true,
+      nest: true,
+    });
+
+    const score = await Review.findAll({
+      attributes: [
+        "burger_id",
+        [sequelize.fn("AVG", sequelize.col("score")), "score"],
+      ],
+      group: ["burger_id"],
+      where: sequelize.literal(
+        `burger_id IN (SELECT burger_id FROM burgers_today WHERE deleted_at IS NULL)`
+      ),
+      raw: true,
+    });
+
+    console.log(score);
+    for (let i = 0; i < result.length; i += 1) {
+      for (let j = 0; j < score.length; j += 1) {
+        if (result[i].id === score[j].burger_id) {
+          console.log("ㅁㄴㅇㅁㄴㅇㄴㅁㅇㄴㅁㅇ");
+          result[i].score = score[j].score;
+        }
+      }
+    }
+    console.log(result);
+    res.status(200).json(result);
   } catch (err) {
     logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });
