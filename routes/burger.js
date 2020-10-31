@@ -115,6 +115,7 @@ router.get("/today", async (req, res) => {
 
     console.log(score);
     for (let i = 0; i < result.length; i += 1) {
+      result[i].score = null;
       for (let j = 0; j < score.length; j += 1) {
         if (result[i].id === score[j].burger_id) {
           console.log("ㅁㄴㅇㅁㄴㅇㄴㅁㅇㄴㅁㅇ");
