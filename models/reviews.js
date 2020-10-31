@@ -42,6 +42,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.FLOAT,
         allowNull: true,
       },
+      greasy: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
     },
     {
       sequelize,
