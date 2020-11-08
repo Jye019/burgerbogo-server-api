@@ -145,6 +145,13 @@ router.delete("/today", verifyToken, isAdmin, async (req, res) => {
 /*                오늘의 버거 End               */
 
 /*                버거 Start                    */
+router.get("/all", async (req, res) => {
+  const result = await Burger.findAll({
+    attributes: { exclude: ["brand_id", "deleted_at"] },
+    include: [{ model: Brand, attributes: { exclude: ["deleted_at"] } }],
+  });
+  res.json(result);
+});
 // 버거 이미지 등록
 router.post("/image", verifyToken, isDirector, (req, res) => {
   upload.single("image")(req, res, (err) => {

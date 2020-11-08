@@ -1,6 +1,6 @@
 import express from "express";
-import seq from "sequelize";
-import { Review, User, Burger } from "../models";
+import seq, { QueryTypes } from "sequelize";
+import { sequelize, Review, User, Burger } from "../models";
 import middleware from "./middleware";
 import { logger } from "../library/log";
 
