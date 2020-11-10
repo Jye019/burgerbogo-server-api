@@ -78,6 +78,7 @@ exports.sendEmail = async (req, res, emailType) => {
       const verifyKey = key1 + key2;
       const verifyLink = `http://${req.get("host")}/auth/confirmEmail?key=${verifyKey}`;
 
+      console.log(req);
       await User.update(
         { verify_key: verifyKey },
         { where: { email: req.body.email, }}
