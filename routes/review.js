@@ -17,7 +17,13 @@ router.get("/recent/:limit", async (req, res) => {
     const result = await Review.scope("newReview").findAll({
       offset: 0,
       limit: req.params.limit * 1,
+      raw: true,
+      nest: true,
     });
+    for (let i = 0; i < result.length; i += 1) {
+      result[i].Burger.score = result[i].score;
+      delete result[i].score;
+    }
     res.status(200).json({
       data: result,
     });
@@ -45,39 +51,36 @@ router.get("/", async (req, res) => {
 });
 
 // 리뷰 추가
-router.post(
-  "/",
-  /*verifyToken,*/ async (req, res) => {
-    try {
-      const { id } = await Review.create(req.body);
-      const result = await Review.findOne({
-        where: { id },
-        attributes: {
-          exclude: [
-            "sweet",
-            "sour",
-            "salty",
-            "spicy",
-            "greasy",
-            "user_id",
-            "deleted_at",
-          ],
-        },
-        include: [{ model: User, attributes: ["id", "nickname"] }],
+router.post("/", verifyToken, async (req, res) => {
+  try {
+    const { id } = await Review.create(req.body);
+    const result = await Review.findOne({
+      where: { id },
+      attributes: {
+        exclude: [
+          "sweet",
+          "sour",
+          "salty",
+          "spicy",
+          "greasy",
+          "user_id",
+          "deleted_at",
+        ],
+      },
+      include: [{ model: User, attributes: ["id", "nickname"] }],
+    });
+    res.status(200).json({ data: result });
+  } catch (err) {
+    logger.log(err);
+    if (err instanceof seq.ValidationError) {
+      return res.status(400).json({
+        code: "SEQUELIZE_VALIDATION_ERROR",
+        message: err["errors"][0]["message"],
       });
-      res.status(200).json({ data: result });
-    } catch (err) {
-      logger.log(err);
-      if (err instanceof seq.ValidationError) {
-        return res.status(400).json({
-          code: "SEQUELIZE_VALIDATION_ERROR",
-          message: err["errors"][0]["message"],
-        });
-      }
-      res.status(500).json({ code: "ERROR", error: err.stack });
     }
+    res.status(500).json({ code: "ERROR", error: err.stack });
   }
-);
+});
 
 // 리뷰 수정
 router.put("/", verifyToken, async (req, res) => {
@@ -135,7 +138,7 @@ router.get("/my", verifyToken, async (req, res) => {
     });
 
     res.status(200).json({
-      code: "REVIEW_SUCESS",
+      code: "REVIEW_SUCCESS",
       data: list,
     });
   } catch (err) {
