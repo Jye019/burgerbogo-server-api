@@ -79,7 +79,7 @@ router.post("/today", verifyToken, isAdmin, async (req, res) => {
 // 오늘의버거 조회
 router.get("/today", async (req, res) => {
   try {
-    let tbList = await TBurger.findAll({
+    const tbList = await TBurger.findAll({
       attributes: [["burger_id", "id"]],
       raw: true,
     });
@@ -145,12 +145,16 @@ router.delete("/today", verifyToken, isAdmin, async (req, res) => {
 /*                오늘의 버거 End               */
 
 /*                버거 Start                    */
-router.get("/all", async (req, res) => {
-  const result = await Burger.findAll({
-    attributes: { exclude: ["brand_id", "deleted_at"] },
-    include: [{ model: Brand, attributes: { exclude: ["deleted_at"] } }],
-  });
-  res.json(result);
+router.get("/all", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const result = await Burger.findAll({
+      attributes: { exclude: ["brand_id", "deleted_at"] },
+      include: [{ model: Brand, attributes: { exclude: ["deleted_at"] } }],
+    });
+    return res.status(200).json(result);
+  } catch (err) {
+    return res.status(500).json({ code: "ERROR", error: err.stack });
+  }
 });
 // 버거 이미지 등록
 router.post("/image", verifyToken, isDirector, (req, res) => {

@@ -94,19 +94,12 @@ module.exports = function (sequelize, DataTypes) {
       group: ["burger_id"],
     });
     reviews.addScope("myReview", {
-      attributes: ["id", "score", "content"],
+      attributes: ["id", "created_at", "updated_at"],
       include: [
         {
           model: models.Burger,
-          attributes: [
-            "id",
-            "name",
-            "price_single",
-            "price_set",
-            "price_combo",
-            "image",
-          ],
-          include: [{ model: models.Brand, attributes: ["name"] }],
+          attributes: ["id", "name"],
+          // include: [{ model: models.Brand, attributes: ["name"] }],
         },
       ],
     });
