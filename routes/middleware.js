@@ -76,9 +76,8 @@ exports.sendEmail = async (req, res, emailType) => {
       const key1 = encodeURIComponent(crypto.randomBytes(256).toString("hex")).substring(99, 51);
       const key2 = encodeURIComponent(crypto.randomBytes(256).toString("base64")).substring(51, 99);
       const verifyKey = key1 + key2;
-      const verifyLink = `http://${req.get("host")}/auth/confirmEmail?key=${verifyKey}`;
+      const verifyLink = `https://${ process.env.NODE_ENV==='production'?'api':'api-dev'}.burgerbogo.net/auth/confirmEmail?key=${verifyKey}`;
 
-      console.log(req);
       await User.update(
         { verify_key: verifyKey },
         { where: { email: req.body.email, }}
@@ -91,7 +90,7 @@ exports.sendEmail = async (req, res, emailType) => {
       const token = jwt.sign( {id, nickname}, 
                             ( process.env.JWT_SECRET || 'xu5q!p1' ),
                             { expiresIn: '10m', issuer: 'nsm',});
-      const resetPasswordLink = `http://${req.get("host")}/reset/pw/${token}`;
+      const resetPasswordLink = `https://${ process.env.NODE_ENV==='production'?'api':'api-dev'}.burgerbogo.net/reset/pw/${token}`;
       contents = template({nickname, resetPasswordLink}); 
     }
 
