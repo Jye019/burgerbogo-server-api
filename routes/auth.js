@@ -126,18 +126,24 @@ router.post('/send/:type',  async (req, res) => {
 // 이메일 인증 확인
 router.get('/confirmEmail', async (req, res) => {
     try {
-        const key = encodeURIComponent(req.query.key);
+        const key = req.query.key;
         const userInfo = await User.findOne({ 
             attributes: {exclude: ['password']},
-            where: {
-                [sequelize.Op.and] : [
-                    sequelize.where(sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('created_at')),{ [sequelize.Op.lt]: 1}),
-                    {verify_key: key}
-                ]
-            }
+            where: {verify_key: key}
         });
     
         if(userInfo) {
+            const createdAt = new Date(userInfo.created_at);
+            createdAt.setDate(createdAt.getDate() + 1);
+
+            if(createdAt < new Date()) {
+                return res.redirect("/auth/expired");
+            } 
+
+            if(userInfo.verified === 1) {
+                return res.redirect("/auth/authorized");
+            }
+        
             userInfo.verified = 1;
             await User.update(
                 { verified: 1 }, 
@@ -342,6 +348,8 @@ router.post('/renew', renewToken);
 router.get('/:result', async (req, res) => {
     try {
         if (req.params.result === 'success') return res.send('<script type="text/javascript">alert("인증 완료되었습니다.");</script>');
+        if (req.params.result === 'expired') return res.send('<script type="text/javascript">alert("만료되었습니다.");</script>');
+        if (req.params.result === 'authorized') return res.send('<script type="text/javascript">alert("이미 인증되었습니다.");</script>');
         return res.send('<script type="text/javascript">alert("인증 실패하였습니다.");</script>');
     } catch (err) {
         logger.error(err);
