@@ -1,8 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import fs from "fs";
-import https from "https";
 import auth from "./routes/auth";
 import burger from "./routes/burger";
 import brand from "./routes/brand";
@@ -42,11 +40,3 @@ app.use((req, res) => {
 app.listen(3000, () => {
   console.log("Listening at port 3000");
 });
-
-
-const options = { // letsencrypt로 받은 인증서 경로를 입력
-  ca: fs.readFileSync('/etc/letsencrypt/live/burgerbogo.net/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/burgerbogo.net/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/burgerbogo.net/cert.pem')
-};
-https.createServer(options, app).listen(443);
