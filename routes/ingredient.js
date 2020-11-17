@@ -64,8 +64,8 @@ router.put("/", verifyToken, isAdmin, async (req, res) => {
 
 router.delete("/", verifyToken, isAdmin, async (req, res) => {
   try {
-    if (await Ingredient.findOne({ where: { id: req.body.id } })) {
-      await Ingredient.destroy({ where: { id: req.body.id } });
+    if (await Ingredient.findOne({ where: { id: req.query.id } })) {
+      await Ingredient.destroy({ where: { id: req.query.id } });
       res.status(200).json({});
     } else res.status(400).json({ code: "INGREDIENT_INVALID_ID" });
   } catch (err) {
@@ -138,8 +138,8 @@ router.put("/burger", verifyToken, isAdmin, async (req, res) => {
 
 router.delete("/burger", verifyToken, isAdmin, async (req, res) => {
   try {
-    if (await BIngredient.findOne({ where: { id: req.body.id } })) {
-      await BIngredient.destroy({ where: { id: req.body.id } });
+    if (await BIngredient.findOne({ where: { id: req.query.id } })) {
+      await BIngredient.destroy({ where: { id: req.query.id } });
       res.status(200).json({});
     } else res.status(400).json({ code: "INGREDIENT_BURGER_INVALID_ID" });
   } catch (err) {

@@ -66,8 +66,8 @@ router.put("/", verifyToken, isAdmin, async (req, res) => {
 
 router.delete("/", verifyToken, isAdmin, async (req, res) => {
   try {
-    if (await Brand.findOne({ where: { id: req.body.id } })) {
-      await Brand.destroy({ where: { id: req.body.id } });
+    if (await Brand.findOne({ where: { id: req.query.id } })) {
+      await Brand.destroy({ where: { id: req.query.id } });
       res.status(200).json({});
     } else res.status(400).json({ code: "BRAND_INVALID_ID" });
   } catch (err) {

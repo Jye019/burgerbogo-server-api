@@ -133,8 +133,8 @@ router.get("/today", async (req, res) => {
 // 오늘의버거 삭제
 router.delete("/today", verifyToken, isAdmin, async (req, res) => {
   try {
-    if (await TBurger.findOne({ where: { id: req.body.id } })) {
-      await TBurger.destroy({ where: { id: req.body.id } });
+    if (await TBurger.findOne({ where: { id: req.query.id } })) {
+      await TBurger.destroy({ where: { id: req.query.id } });
       res.status(200).json({});
     } else res.status(400).json({ code: "BURGER_TODAY_INVALID_ID" });
   } catch (err) {
@@ -252,8 +252,8 @@ router.put("/", verifyToken, isDirector, async (req, res) => {
 // 버거 삭제
 router.delete("/", verifyToken, isDirector, async (req, res) => {
   try {
-    if (await Burger.findOne({ where: { id: req.body.id } })) {
-      await Burger.destroy({ where: { id: req.body.id } });
+    if (await Burger.findOne({ where: { id: req.query.id } })) {
+      await Burger.destroy({ where: { id: req.query.id } });
       res.status(200).json({});
     } else res.status(400).json({ code: "BURGER_INVALID_ID" });
   } catch (err) {
