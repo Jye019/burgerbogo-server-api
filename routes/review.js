@@ -36,13 +36,24 @@ router.get("/recent/:limit", async (req, res) => {
 // 리뷰 조회
 router.get("/", async (req, res) => {
   try {
-    const result = await Review.findAll({
-      limit: req.query.limit * 1,
-      offset: (req.query.page - 1) * req.query.limit,
-      where: { burger_id: req.query.burgerId },
-      order: [["created_at", "desc"]],
-      include: [{ model: User, attributes: ["id", "nickname"] }],
-    });
+    let result = {};
+    if (!req.query.burgerId) {
+      result = await Review.findAll({
+        attributes: ["id", "score", "created_at"],
+        include: [
+          { model: User, attributes: ["nickname"] },
+          { model: Burger, attributes: ["name"] },
+        ],
+      });
+    } else {
+      result = await Review.findAll({
+        limit: req.query.limit * 1,
+        offset: (req.query.page - 1) * req.query.limit,
+        where: { burger_id: req.query.burgerId },
+        order: [["created_at", "desc"]],
+        include: [{ model: User, attributes: ["id", "nickname"] }],
+      });
+    }
     res.status(200).json({ data: result });
   } catch (err) {
     logger.log(err);
@@ -155,3 +166,16 @@ router.get("/test", async (req, res) => {
   res.json(result);
 });
 export default router;
+
+// 단일 리뷰 조회
+router.get("/:id", async (req, res) => {
+  try {
+    const result = await Review.findOne({
+      where: { burger_id: req.params.id },
+      include: [{ model: User, attributes: ["id", "nickname"] }],
+    });
+    return res.status(200).json({ data: result });
+  } catch (err) {
+    return res.status(500).json({ code: "ERROR", error: err.stack });
+  }
+});
