@@ -23,7 +23,7 @@
      }
   },
   "scripts": {
-    "start-watch": "pm2 deploy development setup start --interpreter babel-node app.js",
+    "start-watch": "pm2 start --interpreter babel-node app.js",
     "init": "babel-node init.js",
     "test": "env NODE_ENV=test mocha -r @babel/register -r @babel/polyfill --exit ",
     "start": "npm run init & npm run start-watch"
