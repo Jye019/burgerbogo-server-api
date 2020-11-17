@@ -11,7 +11,8 @@
       "repo" : "git@github.com:NSM-inc/burgerbogo-api-server.git",
       "path" : "/burgerbogo-api-server",
       "ssh_options": "StrictHostKeyChecking=no",
-      "post-deploy" : "npm install"
+      "post-deploy" : "npm install",
+      "key":"/home/bitnami/.ssh/id_rsa.pub"
      },
      "production" : {
       "user" : "bitnami",
