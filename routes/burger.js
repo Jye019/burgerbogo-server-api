@@ -151,7 +151,7 @@ router.get("/all", verifyToken, isAdmin, async (req, res) => {
       attributes: { exclude: ["brand_id", "deleted_at"] },
       include: [{ model: Brand, attributes: { exclude: ["deleted_at"] } }],
     });
-    return res.status(200).json(result);
+    return res.status(200).json({ data: result });
   } catch (err) {
     return res.status(500).json({ code: "ERROR", error: err.stack });
   }
