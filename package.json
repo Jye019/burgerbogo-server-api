@@ -6,7 +6,7 @@
   "deploy" : {
     "development" : {
       "user" : "bitnami",
-      "host" : ["3.34.158.169"],
+      "host" : ["api-dev.burgerbogo.net"],
       "ref"  : "origin/dev",
       "repo" : "git@github.com:NSM-inc/burgerbogo-api-server.git",
       "path" : "/burgerbogo-api-server",
@@ -15,7 +15,7 @@
      },
      "production" : {
       "user" : "bitnami",
-      "host" : ["13.125.26.210"],
+      "host" : ["api.burgerbogo.net"],
       "ref"  : "origin/prod",
       "repo" : "git@github.com:NSM-inc/burgerbogo-api-server.git",
       "path" : "/var/www/my-repository",
@@ -23,7 +23,7 @@
      }
   },
   "scripts": {
-    "start-watch": "pm2 start --interpreter babel-node app.js",
+    "start-watch": "pm2 deploy development setup start --interpreter babel-node app.js",
     "init": "babel-node init.js",
     "test": "env NODE_ENV=test mocha -r @babel/register -r @babel/polyfill --exit ",
     "start": "npm run init & npm run start-watch"
