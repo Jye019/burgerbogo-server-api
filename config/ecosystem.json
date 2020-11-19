@@ -18,7 +18,7 @@
     },
     "production": {
       "user": "bitnami",
-      "host": [{ "host": "api.burgerbogo.net", "port": "3000" }],
+      "host": "api.burgerbogo.net",
       "ref": "origin/prod",
       "repo": "git@github.com:NSM-inc/burgerbogo-api-server.git", 
       "path": "/home/bitnami/burgerbogo-api-server",
