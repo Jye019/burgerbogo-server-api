@@ -14,7 +14,7 @@
       "repo": "git@github.com:NSM-inc/burgerbogo-api-server.git", 
       "path": "/home/bitnami/burgerbogo-api-server",
       "post-deploy":
-        "npm install"
+        "npm install" 
     },
     "production": {
       "user": "bitnami",
@@ -23,7 +23,7 @@
       "repo": "git@github.com:NSM-inc/burgerbogo-api-server.git", 
       "path": "/home/bitnami/burgerbogo-api-server",
       "post-deploy":
-        "npm install"
+        "npm install && export NODE_ENV=production"
     }
   }
 }
