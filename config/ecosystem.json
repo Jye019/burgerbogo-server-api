@@ -1,0 +1,29 @@
+{
+  "apps": [{
+      "name": "burgerbogo-api", 
+      "script": "../app.js", 
+      "instances": 1,
+      "autorestart": true, // 프로세스 실패 시 자동으로 재시작할지 선택
+      "watch": true
+    }],
+  "deploy": {
+    "development": {
+      "user": "bitnami",
+      "host": "api-dev.burgerbogo.net",
+      "ref": "origin/dev",
+      "repo": "git@github.com:NSM-inc/burgerbogo-api-server.git", 
+      "path": "/home/bitnami/burgerbogo-api-server",
+      "post-deploy":
+        "npm install"
+    },
+    "production": {
+      "user": "bitnami",
+      "host": [{ "host": "api.burgerbogo.net", "port": "3000" }],
+      "ref": "origin/prod",
+      "repo": "git@github.com:NSM-inc/burgerbogo-api-server.git", 
+      "path": "/home/bitnami/burgerbogo-api-server",
+      "post-deploy":
+        "npm install"
+    }
+  }
+}
