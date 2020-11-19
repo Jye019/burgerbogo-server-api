@@ -77,7 +77,8 @@ router.get('/', async(req, res) => {
                         AND COALESCE(score_count, 0) >= ${(order==='score')? 3: 0}
                         AND ( fn_search_csnt(name) like '%${keyword || ''}%' OR name like '%${keyword || ''}%' )
                         ${ (brand)? `AND brand_id IN (${brand})` : ''}
-                        ORDER BY ${order} ${(order==='score')? 'DESC' : 'ASC'}`,
+                        ORDER BY ${order} ${(order==='score')? 'DESC' : 'ASC'}
+                        ${(order==='released_at_year')? ', released_at_month ASC, released_at_day ASC' : ''}`,
                         { 
                             type: QueryTypes.SELECT,
                             nest: true,
