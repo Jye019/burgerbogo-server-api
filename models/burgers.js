@@ -57,7 +57,15 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING(200),
         allowNull: true,
       },
-      released_at: {
+      released_at_year: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+      },
+      released_at_month: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+      },
+      released_at_day: {
         type: DataTypes.DATEONLY,
         allowNull: true,
       },
