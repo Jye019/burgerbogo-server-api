@@ -58,15 +58,15 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: true,
       },
       released_at_year: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.SMALLINT(4),
         allowNull: true,
       },
       released_at_month: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.TINYINT(2),
         allowNull: true,
       },
       released_at_day: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.TINYINT(2),
         allowNull: true,
       },
       weight: {

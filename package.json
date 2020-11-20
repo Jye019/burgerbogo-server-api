@@ -7,7 +7,8 @@
     "start-watch": "pm2 start --interpreter babel-node app.js",
     "init": "babel-node init.js",
     "test": "env NODE_ENV=test mocha -r @babel/register -r @babel/polyfill --exit ",
-    "start": "npm run init & npm run start-watch"
+    "start": "npm run init & npm run start-watch",
+    "dev": "nodemon --exec babel-node app.js"
   },
   "repository": {
     "type": "git",
