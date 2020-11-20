@@ -36,7 +36,7 @@ router.get('/', async(req, res) => {
 
         if( !order ) 
             return res.status(406).json({code: "FILTER_ORDER_MISSING"});
-        if( !(order === "name" || order === "score" || order === "released_at_year") ) 
+        if( !(order === "name" || order === "score" || order === "released_at_year" || order === "calorie") )
             return res.status(406).json({code: "FILTER_UNEXPECTED_ORDER"});
         if( keyword ) 
             keyword = keyword.replace(/(\s*)/g, "");
