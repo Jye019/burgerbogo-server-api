@@ -126,7 +126,7 @@ router.post('/send/:type',  async (req, res) => {
 // 이메일 인증 확인
 router.get('/confirmEmail', async (req, res) => {
     try {
-        const key = req.query.key;
+        const key = encodeURIComponent(req.query.key);
         const userInfo = await User.findOne({ 
             attributes: {exclude: ['password']},
             where: {verify_key: key}
