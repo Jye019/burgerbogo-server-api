@@ -84,12 +84,17 @@ router.post("/burger", verifyToken, isAdmin, async (req, res) => {
     for (let i = 0; i < req.body.ingredient_id.length; i += 1) {
       if (
         !(await Ingredient.findOne({
-          where: { id: req.body.ingredient_id[i] },
+          where: { id: req.body.ingredient_id[i] }
         }))
       ) {
         return res.status(400).json({ code: "INGREDIENT_INVALID_ID" });
       }
     }
+
+    // 기존에 버거와 재료 연결돼있는 데이터 삭제
+    await BIngredient.destroy({ where: { burger_id: req.body.burger_id } });
+
+    // 버거와 재료 연결 
     const bulkData = req.body.ingredient_id.map((e) => {
       return { burger_id: req.body.burger_id, ingredient_id: e };
     });
