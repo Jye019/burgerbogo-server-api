@@ -50,7 +50,7 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
-          isInt: true,
+          isFloat: true,
         },
       },
       image: {
@@ -73,35 +73,35 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
-          isInt: true,
+          isFloat: true,
         },
       },
       protein: {
         type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
-          isInt: true,
+          isFloat: true,
         },
       },
       natrium: {
         type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
-          isInt: true,
+          isFloat: true,
         },
       },
       sugar: {
         type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
-          isInt: true,
+          isFloat: true,
         },
       },
       saturated_fat: {
         type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
-          isInt: true,
+          isFloat: true,
         },
       },
     },
