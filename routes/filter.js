@@ -76,7 +76,7 @@ router.get('/', async(req, res) => {
                             GROUP BY burger_id) AS review 
                         ON review.burger_id=burger.id
                         WHERE bi.id IS NULL
-                        AND burger.deleted_at IS NOT NULL
+                        AND burger.deleted_at IS NULL
                         AND COALESCE(score_count, 0) >= ${(order==='score')? 3: 0}
                         AND ( fn_search_csnt(name) like '%${keyword || ''}%' OR name like '%${keyword || ''}%' )
                         ${ (brand)? `AND brand_id IN (${brand})` : ''}
