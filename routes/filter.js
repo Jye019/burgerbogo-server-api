@@ -36,7 +36,7 @@ router.get('/', async(req, res) => {
 
         if( !order ) 
             return res.status(406).json({code: "FILTER_ORDER_MISSING"});
-        if( !(order === "name" || order === "score" || order === "released_at") ) 
+        if( !(order === "name" || order === "score" || order === "released_at_year" || order === "calorie") )
             return res.status(406).json({code: "FILTER_UNEXPECTED_ORDER"});
         if( keyword ) 
             keyword = keyword.replace(/(\s*)/g, "");
@@ -46,7 +46,9 @@ router.get('/', async(req, res) => {
                                 price_single, 
                                 price_set, 
                                 price_combo,
-                                released_at,
+                                released_at_year,
+                                released_at_month,
+                                released_at_day,
                                 burger.id as id,
                                 score, 
                                 score_count,
