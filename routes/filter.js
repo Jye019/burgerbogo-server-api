@@ -38,7 +38,6 @@ router.get('/', async(req, res) => {
             return res.status(406).json({code: "FILTER_ORDER_MISSING"});
         if( !(order === "name" || order === "score" || order === "released_at_year" || order === "calorie") )
             return res.status(406).json({code: "FILTER_UNEXPECTED_ORDER"});
-        if( keyword ) 
             keyword = keyword.replace(/(\s*)/g, "");
 
         const list =  await db.sequelize.query(
@@ -76,8 +75,9 @@ router.get('/', async(req, res) => {
                             GROUP BY burger_id) AS review 
                         ON review.burger_id=burger.id
                         WHERE bi.id IS NULL
+                        AND burger.deleted_at IS NULL
                         AND COALESCE(score_count, 0) >= ${(order==='score')? 3: 0}
-                        AND ( fn_search_csnt(name) like '%${keyword || ''}%' OR name like '%${keyword || ''}%' )
+                        AND ( fn_search_csnt(name) like '%${keyword || ''}%' OR replace(name, ' ', '') like '%${keyword || ''}%' )
                         ${ (brand)? `AND brand_id IN (${brand})` : ''}
                         ORDER BY ${order} ${(order==='score')? 'DESC' : 'ASC'}
                         ${(order==='released_at_year')? ', released_at_month ASC, released_at_day ASC' : ''}`,
