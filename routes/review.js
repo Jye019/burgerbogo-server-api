@@ -39,7 +39,12 @@ router.get("/", async (req, res) => {
     let result = {};
     if (!req.query.burgerId) {
       result = await Review.findAll({
-        attributes: ["id", "score", "created_at"],
+        limit: req.query.limit ? req.query.limit * 1 : 10,
+        offset: req.query.page
+          ? (req.query.page - 1) * (req.query.limit ? req.query.limit : 10)
+          : 0,
+        order: [["created_at", "desc"]],
+        attributes: ["id", "score", "content", "created_at"],
         include: [
           { model: User, attributes: ["nickname"] },
           { model: Burger, attributes: ["name"] },
@@ -47,14 +52,17 @@ router.get("/", async (req, res) => {
       });
     } else {
       result = await Review.findAll({
-        limit: req.query.limit * 1,
-        offset: (req.query.page - 1) * req.query.limit,
+        limit: req.query.limit ? req.query.limit * 1 : 10,
+        offset: req.query.page
+          ? (req.query.page - 1) * (req.query.limit ? req.query.limit : 10)
+          : 0,
         where: { burger_id: req.query.burgerId },
         order: [["created_at", "desc"]],
         include: [{ model: User, attributes: ["id", "nickname"] }],
       });
     }
-    res.status(200).json({ data: result });
+    const totalCount = await Review.count();
+    res.status(200).json({ meta: { totalCount }, data: result });
   } catch (err) {
     logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });

@@ -176,8 +176,8 @@ router.post("/", verifyToken, isDirector, async (req, res) => {
         where: { id: req.body.brand_id },
       })
     ) {
-      await Burger.create(req.body);
-      res.status(200).json({});
+      const { id } = await Burger.create(req.body);
+      res.status(200).json({ data: { id } });
     } else {
       res.status(400).json({ code: "BRAND_INVALID_ID" });
     }

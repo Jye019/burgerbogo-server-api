@@ -81,12 +81,19 @@ router.post("/burger", verifyToken, isAdmin, async (req, res) => {
     if (!(await Burger.findOne({ where: { id: req.body.burger_id } }))) {
       return res.status(400).json({ code: "BURGER_INVALID_ID" });
     }
-    if (
-      !(await Ingredient.findOne({ where: { id: req.body.ingredient_id } }))
-    ) {
-      return res.status(400).json({ code: "INGREDIENT_INVALID_ID" });
+    for (let i = 0; i < req.body.ingredient_id.length; i += 1) {
+      if (
+        !(await Ingredient.findOne({
+          where: { id: req.body.ingredient_id[i] },
+        }))
+      ) {
+        return res.status(400).json({ code: "INGREDIENT_INVALID_ID" });
+      }
     }
-    await BIngredient.create(req.body);
+    const bulkData = req.body.ingredient_id.map((e) => {
+      return { burger_id: req.body.burger_id, ingredient_id: e };
+    });
+    await BIngredient.bulkCreate(bulkData);
     return res.status(200).json({});
   } catch (err) {
     logger.log(err);
