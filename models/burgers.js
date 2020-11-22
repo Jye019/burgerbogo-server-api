@@ -47,7 +47,7 @@ module.exports = function (sequelize, DataTypes) {
         },
       },
       calorie: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
           isInt: true,
@@ -70,35 +70,35 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: true,
       },
       weight: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
           isInt: true,
         },
       },
       protein: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
           isInt: true,
         },
       },
       natrium: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
           isInt: true,
         },
       },
       sugar: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
           isInt: true,
         },
       },
       saturated_fat: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
         validate: {
           isInt: true,
