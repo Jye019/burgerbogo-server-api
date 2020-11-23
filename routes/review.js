@@ -1,6 +1,6 @@
 import express from "express";
-import seq, { QueryTypes } from "sequelize";
-import { sequelize, Review, User, Burger } from "../models";
+import seq from "sequelize";
+import { Review, User, Burger } from "../models";
 import middleware from "./middleware";
 import { logger } from "../library/log";
 
@@ -72,23 +72,32 @@ router.get("/", async (req, res) => {
 // 리뷰 추가
 router.post("/", verifyToken, async (req, res) => {
   try {
-    const { id } = await Review.create(req.body);
-    const result = await Review.findOne({
-      where: { id },
-      attributes: {
-        exclude: [
-          "sweet",
-          "sour",
-          "salty",
-          "spicy",
-          "greasy",
-          "user_id",
-          "deleted_at",
-        ],
-      },
-      include: [{ model: User, attributes: ["id", "nickname"] }],
+    const isExist = await Review.findOne({
+      where: { burger_id: req.body.burger_id, user_id: req.atoken.id },
     });
-    res.status(200).json({ data: result });
+    if (!isExist) {
+      const { id } = await Review.create({
+        user_id: req.atoken.id,
+        ...req.body,
+      });
+      const result = await Review.findOne({
+        where: { id },
+        attributes: {
+          exclude: [
+            "sweet",
+            "sour",
+            "salty",
+            "spicy",
+            "greasy",
+            "user_id",
+            "deleted_at",
+          ],
+        },
+        include: [{ model: User, attributes: ["id", "nickname"] }],
+      });
+      return res.status(200).json({ data: result });
+    }
+    return res.status(500).json({ code: "REVIEW_WRONG_USER" });
   } catch (err) {
     logger.log(err);
     if (err instanceof seq.ValidationError) {
