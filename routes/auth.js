@@ -182,10 +182,10 @@ router.post('/login', async (req, res) => {
                     const key = key1 + key2;
                     const accessToken = jwt.sign({id: userInfo.id, nickname: userInfo.nickname, user_level: userInfo.user_level}, 
                                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                                           { expiresIn: 60000, issuer: 'nsm',});
+                                           { expiresIn: process.env.ACCESS_EXPIRESIN_TIME * 60 * 1000, issuer: 'nsm',});
                     const refreshToken = jwt.sign({refreshkey: key}, 
                                             ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                                            { expiresIn: 300000, issuer: 'nsm',});
+                                            { expiresIn: process.env.REFRESH_EXPIRESIN_TIME * 60 * 1000, issuer: 'nsm',});
                     
                     await User.update({refresh_key: key}, {
                         where: { email: userInfo.email }

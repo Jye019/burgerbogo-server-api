@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import handlebars from "handlebars";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import moment from "moment";
 import { Email, User } from "../models";
 import { logger } from "../library/log";
 
@@ -43,8 +44,13 @@ exports.renewToken = async (req, res) => {
     const userInfo = await User.findOne({
       where: { refresh_key: refreshTokenJSON.refreshkey },
     });
-
-    if (userInfo && Date.now() <= refreshTokenJSON.exp * 1000) {
+    console.log(userInfo)
+    console.log('refreshTokenJSON.exp',refreshTokenJSON)
+    const expectedExpiresTime = moment().add(process.env.REFRESH_EXPIRESIN_TIME, process.env.REFRESH_EXPIRESIN_TERM)
+    console.log('Date.noew()',expectedExpiresTime.toDate())
+    console.log('reqsdfad',new Date(refreshTokenJSON.exp * 1000))
+    console.log('ref', expectedExpiresTime <= new Date(refreshTokenJSON.exp * 1000))
+    if (userInfo &&  expectedExpiresTime <= moment(new Date(refreshTokenJSON.exp * 1000))) {
       const accessToken = jwt.sign(
         {
           id: userInfo.id,
@@ -52,7 +58,7 @@ exports.renewToken = async (req, res) => {
           user_level: userInfo.user_level,
         },
         process.env.JWT_SECRET || "xu5q!p1",
-        { expiresIn: "1m", issuer: "nsm" }
+        { expiresIn: process.env.ACCESS_EXPIRESIN_TIME * 60 * 1000, issuer: "nsm" }
       );
       // return userData
       const {
