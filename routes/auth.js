@@ -177,15 +177,15 @@ router.post('/login', async (req, res) => {
             if(await bcrypt.compare(req.body.password, userInfo.password)) {
                 if(userInfo.verified === 1) {
                     // 세션 발급 
-                    const key1 = crypto.randomBytes(256).toString("hex").substring(79, 51);
-                    const key2 = crypto.randomBytes(256).toString("base64").substring(51, 79);
-                    const key = encodeURIComponent(key1 + key2);
+                    const key1 =  encodeURIComponent(crypto.randomBytes(256).toString("hex")).substring(79, 51);
+                    const key2 =  encodeURIComponent(crypto.randomBytes(256).toString("base64")).substring(51, 79);
+                    const key = key1 + key2;
                     const accessToken = jwt.sign({id: userInfo.id, nickname: userInfo.nickname, user_level: userInfo.user_level}, 
                                            ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                                           { expiresIn: '1m', issuer: 'nsm',});
+                                           { expiresIn: 60000, issuer: 'nsm',});
                     const refreshToken = jwt.sign({refreshkey: key}, 
                                             ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                                            { expiresIn: '5m', issuer: 'nsm',});
+                                            { expiresIn: 300000, issuer: 'nsm',});
                     
                     await User.update({refresh_key: key}, {
                         where: { email: userInfo.email }
