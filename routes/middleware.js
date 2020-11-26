@@ -52,7 +52,7 @@ exports.renewToken = async (req, res) => {
           user_level: userInfo.user_level,
         },
         process.env.JWT_SECRET || "xu5q!p1",
-        { expiresIn: "10m", issuer: "nsm" }
+        { expiresIn: "1m", issuer: "nsm" }
       );
       // return userData
       const {
