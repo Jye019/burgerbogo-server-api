@@ -1,6 +1,6 @@
 import express from "express";
-import seq, { Op } from "sequelize";
-import { Review, User, Burger } from "../models";
+import seq, { Op, QueryTypes } from "sequelize";
+import { Review, User, Burger, sequelize } from "../models";
 import middleware from "./middleware";
 import { logger } from "../library/log";
 
@@ -14,11 +14,16 @@ router.use(express.urlencoded({ extended: false }));
 // 최신리뷰 조회
 router.get("/recent/:limit", async (req, res) => {
   try {
+    const grouping = await sequelize.query(
+      `SELECT id FROM (SELECT id,burger_id FROM reviews WHERE deleted_at IS NULL ORDER BY updated_at DESC) sub GROUP BY burger_id LIMIT ?`,
+      { type: QueryTypes.SELECT, replacements: [req.params.limit * 1] }
+    );
+    const reviewList = grouping;
+    console.log(reviewList);
     const result = await Review.scope("newReview").findAll({
-      offset: 0,
-      limit: req.params.limit * 1,
       raw: true,
       nest: true,
+      where: { [Op.or]: reviewList },
     });
     for (let i = 0; i < result.length; i += 1) {
       result[i].Burger.score = result[i].score;
@@ -50,16 +55,26 @@ router.get("/", async (req, res) => {
           { model: Burger, attributes: ["name"] },
         ],
       });
+      const totalCount = await Review.count();
+      res.status(200).json({ meta: { totalCount }, data: result });
     } else {
+      let where = {};
+      if (req.query.user_id) {
+        where = {
+          burger_id: req.query.burgerId,
+          [Op.not]: { user_id: req.query.userId },
+        };
+      } else {
+        where = {
+          burger_id: req.query.burgerId,
+        };
+      }
       result = await Review.findAll({
         limit: req.query.limit ? req.query.limit * 1 : 10,
         offset: req.query.page
           ? (req.query.page - 1) * (req.query.limit ? req.query.limit : 10)
           : 0,
-        where: {
-          burger_id: req.query.burgerId,
-          [Op.not]: { user_id: req.query.userId },
-        },
+        where,
         order: [["updated_at", "desc"]],
         include: [{ model: User, attributes: ["id", "nickname"] }],
         raw: true,
@@ -74,13 +89,11 @@ router.get("/", async (req, res) => {
         });
         if (myReview) {
           result.unshift(myReview);
-          result.splice(req.query.limit ? req.query.limit : 10, 1);
         }
         console.log(result);
       }
+      res.status(200).json({ data: result });
     }
-    const totalCount = await Review.count();
-    res.status(200).json({ meta: { totalCount }, data: result });
   } catch (err) {
     logger.log(err);
     res.status(500).json({ code: "ERROR", error: err.stack });

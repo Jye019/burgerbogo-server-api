@@ -72,7 +72,6 @@ module.exports = function (sequelize, DataTypes) {
       foreignKey: "burger_id",
     });
     reviews.addScope("newReview", {
-      order: [["created_at", "DESC"]],
       attributes: [
         "id",
         [sequelize.fn("AVG", sequelize.col("score")), "score"],
@@ -91,7 +90,6 @@ module.exports = function (sequelize, DataTypes) {
           include: [{ model: models.Brand, attributes: ["name"] }],
         },
       ],
-      group: ["burger_id"],
     });
     reviews.addScope("myReview", {
       attributes: ["id", "score", "content", "created_at", "updated_at"],
