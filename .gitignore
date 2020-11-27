@@ -2,5 +2,6 @@
 /config/awsconfig.json
 /config/sequelize.json
 package-lock.json
-/uploads
+/uploads/xlsx/burger
+
 
