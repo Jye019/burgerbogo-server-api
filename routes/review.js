@@ -59,7 +59,7 @@ router.get("/", async (req, res) => {
       res.status(200).json({ meta: { totalCount }, data: result });
     } else {
       let where = {};
-      if (req.query.user_id) {
+      if (req.query.userId) {
         where = {
           burger_id: req.query.burgerId,
           [Op.not]: { user_id: req.query.userId },
