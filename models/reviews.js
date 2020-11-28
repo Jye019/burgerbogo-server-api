@@ -92,7 +92,18 @@ module.exports = function (sequelize, DataTypes) {
       ],
     });
     reviews.addScope("myReview", {
-      attributes: ["id", "score", "content", "created_at", "updated_at"],
+      attributes: [
+        "id",
+        "score",
+        "sweet",
+        "sour",
+        "salty",
+        "spicy",
+        "greasy",
+        "content",
+        "created_at",
+        "updated_at",
+      ],
       include: [
         {
           model: models.Burger,

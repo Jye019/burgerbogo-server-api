@@ -12,31 +12,44 @@ router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
 // 최신리뷰 조회
-router.get("/recent/:limit", async (req, res) => {
-  try {
-    const grouping = await sequelize.query(
-      `SELECT id FROM (SELECT id,burger_id FROM reviews WHERE deleted_at IS NULL ORDER BY updated_at DESC) sub GROUP BY burger_id LIMIT ?`,
-      { type: QueryTypes.SELECT, replacements: [req.params.limit * 1] }
-    );
-    const reviewList = grouping;
-    console.log(reviewList);
-    const result = await Review.scope("newReview").findAll({
-      raw: true,
-      nest: true,
-      where: { [Op.or]: reviewList },
-    });
-    for (let i = 0; i < result.length; i += 1) {
-      result[i].Burger.score = result[i].score;
-      delete result[i].score;
-    }
-    res.status(200).json({
-      data: result,
-    });
-  } catch (err) {
-    logger.log(err);
-    res.status(500).json({ code: "ERROR", error: err.stack });
-  }
-});
+// router.get("/recent/:limit", async (req, res) => {
+//   try {
+//     const grouping = await sequelize.query(
+//       `select * from (
+// 	select id
+// 		   , burger_id as 'Burger.id'
+// 		   , (select name from burgers where id=burger_id) as 'Burger.name'
+//        , (select price_single from burgers where id=burger_id) as 'Burger.price_single'
+//        , (select price_set from burgers where id=burger_id) as 'Burger.price_set'
+//        , (select price_combo from burgers where id=burger_id) as 'Burger.price_combo'
+//        , (select image from burgers where id=burger_id) as 'Burger.image'
+// 	from reviews order by updated_at desc
+// )review group by 'Burger.id'`,
+//       {
+//         type: QueryTypes.SELECT,
+//         nest: true,
+//       }
+//     );
+//     // const reviewList = grouping;
+//     // console.log(reviewList);
+//     // const result = await Review.scope("newReview").findAll({
+//     //   raw: true,
+//     //   nest: true,
+//     //   where: { [Op.or]: reviewList },
+//     // });
+//     // console.log(result);
+//     // for (let i = 0; i < result.length; i += 1) {
+//     //   result[i].Burger.score = result[i].score;
+//     //   delete result[i].score;
+//     // }
+//     res.status(200).json({
+//       data: grouping,
+//     });
+//   } catch (err) {
+//     logger.log(err);
+//     res.status(500).json({ code: "ERROR", error: err.stack });
+//   }
+// });
 
 // 리뷰 조회
 router.get("/", async (req, res) => {
