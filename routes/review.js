@@ -84,6 +84,7 @@ router.get("/", async (req, res) => {
         console.log("★");
         const myReview = await Review.findOne({
           where: { user_id: req.query.userId, burger_id: req.query.burgerId },
+          include: [{ model: User, attributes: ["id", "nickname"] }],
           raw: true,
           nest: true,
         });
