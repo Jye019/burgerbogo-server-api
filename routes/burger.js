@@ -79,51 +79,66 @@ router.post("/today", verifyToken, isAdmin, async (req, res) => {
 // 오늘의버거 조회
 router.get("/today", async (req, res) => {
   try {
-    const tbList = await TBurger.findAll({
-      attributes: [["burger_id", "id"]],
-      raw: true,
-    });
-    // tbList = tbList.map((e) => e.burger_id);
-    console.log(tbList);
+    let result = {};
+    if (!req.query.admin) {
+      const tbList = await TBurger.findAll({
+        attributes: [["burger_id", "id"]],
+        raw: true,
+      });
+      // tbList = tbList.map((e) => e.burger_id);
+      console.log(tbList);
 
-    const result = await Burger.findAll({
-      attributes: [
-        "id",
-        "name",
-        "image",
-        "price_single",
-        "price_set",
-        "price_combo",
-      ],
-      where: { [Op.or]: tbList },
-      include: [{ model: Brand, attributes: ["name"] }],
-      raw: true,
-      nest: true,
-    });
+      result = await Burger.findAll({
+        attributes: [
+          "id",
+          "name",
+          "image",
+          "price_single",
+          "price_set",
+          "price_combo",
+        ],
+        where: { [Op.or]: tbList },
+        include: [{ model: Brand, attributes: ["name"] }],
+        raw: true,
+        nest: true,
+      });
 
-    const score = await Review.findAll({
-      attributes: [
-        "burger_id",
-        [sequelize.fn("AVG", sequelize.col("score")), "score"],
-      ],
-      group: ["burger_id"],
-      where: sequelize.literal(
-        `burger_id IN (SELECT burger_id FROM burgers_today WHERE deleted_at IS NULL)`
-      ),
-      raw: true,
-    });
+      const score = await Review.findAll({
+        attributes: [
+          "burger_id",
+          [sequelize.fn("AVG", sequelize.col("score")), "score"],
+        ],
+        group: ["burger_id"],
+        where: sequelize.literal(
+          `burger_id IN (SELECT burger_id FROM burgers_today WHERE deleted_at IS NULL)`
+        ),
+        raw: true,
+      });
 
-    console.log(score);
-    for (let i = 0; i < result.length; i += 1) {
-      result[i].score = null;
-      for (let j = 0; j < score.length; j += 1) {
-        if (result[i].id === score[j].burger_id) {
-          console.log("ㅁㄴㅇㅁㄴㅇㄴㅁㅇㄴㅁㅇ");
-          result[i].score = Math.round(score[j].score * 10) / 10;
+      console.log(score);
+      for (let i = 0; i < result.length; i += 1) {
+        result[i].score = null;
+        for (let j = 0; j < score.length; j += 1) {
+          if (result[i].id === score[j].burger_id) {
+            console.log("ㅁㄴㅇㅁㄴㅇㄴㅁㅇㄴㅁㅇ");
+            result[i].score = Math.round(score[j].score * 10) / 10;
+          }
         }
       }
+      console.log(result);
+    } else {
+      result = await TBurger.findAll({
+        attributes: ["id"],
+        include: [
+          {
+            model: Burger,
+            attributes: ["id", "name"],
+            include: [{ model: Brand, attributes: ["name"] }],
+          },
+        ],
+      });
     }
-    console.log(result);
+
     res.status(200).json({ data: result });
   } catch (err) {
     logger.log(err);
