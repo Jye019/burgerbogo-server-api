@@ -109,8 +109,8 @@ router.post('/send/:type',  async (req, res) => {
         if(req.params.type === 'pw') {
             const user = await User.findOne({where : {email: req.body.email}})
             if( user ) {
+                req.userInfo = user;
                 if(sendEmail(req, res, 2)) {
-                    req.userInfo = user;
                     return res.status(200).json({ "code": "AUTH_SUCCESS" });
                 };   
             }

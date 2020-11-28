@@ -85,6 +85,7 @@ exports.sendEmail = async (req, res, emailType) => {
       where: { id: emailType },
     });
 
+    console.log(email.contents)
     const template = handlebars.compile(email.contents);
     let contents = template();
 
@@ -97,7 +98,6 @@ exports.sendEmail = async (req, res, emailType) => {
       ).substring(51, 99);
       const verifyKey = key1 + key2;
 
-      console.log(verifyKey);
       await User.update(
         { verify_key: verifyKey },
         { where: { email: req.body.email } }
@@ -114,9 +114,7 @@ exports.sendEmail = async (req, res, emailType) => {
         process.env.JWT_SECRET || "xu5q!p1",
         { expiresIn: "10m", issuer: "nsm" }
       );
-      const resetPasswordLink = `https://${
-        process.env.NODE_ENV === "production" ? "api" : "api-dev"
-      }.burgerbogo.net/reset/pw/${token}`;
+      const resetPasswordLink = `https://dev.burgerbogo-admin.ga/noauth/resetPassword?=${token}`;
       contents = template({ nickname, resetPasswordLink });
     }
 
