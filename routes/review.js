@@ -1,3 +1,5 @@
+/* eslint no-await-in-loop: 0 */
+
 import express from "express";
 import seq, { Op, QueryTypes } from "sequelize";
 import { Review, User, Burger, sequelize } from "../models";
@@ -12,44 +14,47 @@ router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
 // 최신리뷰 조회
-// router.get("/recent/:limit", async (req, res) => {
-//   try {
-//     const grouping = await sequelize.query(
-//       `select * from (
-// 	select id
-// 		   , burger_id as 'Burger.id'
-// 		   , (select name from burgers where id=burger_id) as 'Burger.name'
-//        , (select price_single from burgers where id=burger_id) as 'Burger.price_single'
-//        , (select price_set from burgers where id=burger_id) as 'Burger.price_set'
-//        , (select price_combo from burgers where id=burger_id) as 'Burger.price_combo'
-//        , (select image from burgers where id=burger_id) as 'Burger.image'
-// 	from reviews order by updated_at desc
-// )review group by 'Burger.id'`,
-//       {
-//         type: QueryTypes.SELECT,
-//         nest: true,
-//       }
-//     );
-//     // const reviewList = grouping;
-//     // console.log(reviewList);
-//     // const result = await Review.scope("newReview").findAll({
-//     //   raw: true,
-//     //   nest: true,
-//     //   where: { [Op.or]: reviewList },
-//     // });
-//     // console.log(result);
-//     // for (let i = 0; i < result.length; i += 1) {
-//     //   result[i].Burger.score = result[i].score;
-//     //   delete result[i].score;
-//     // }
-//     res.status(200).json({
-//       data: grouping,
-//     });
-//   } catch (err) {
-//     logger.log(err);
-//     res.status(500).json({ code: "ERROR", error: err.stack });
-//   }
-// });
+router.get("/recent/:limit", async (req, res) => {
+  try {
+    const grouping = await sequelize.query(
+      `select * from (
+  select id
+       , burger_id
+       , burger_id as 'Burger.id'
+       , (select name from burgers where id=burger_id) as 'Burger.name'
+       , (select price_single from burgers where id=burger_id) as 'Burger.price_single'
+       , (select price_set from burgers where id=burger_id) as 'Burger.price_set'
+       , (select price_combo from burgers where id=burger_id) as 'Burger.price_combo'
+       , (select image from burgers where id=burger_id) as 'Burger.image'
+       , (select brand_id from burgers where id=burger_id) as 'Burger.Brand.id'
+       , (select name from brands where id=(select brand_id from burgers where id=burger_id)) as 'Burger.Brand.name'
+	from reviews order by updated_at desc
+)review group by burger_id limit ?`,
+      {
+        type: QueryTypes.SELECT,
+        replacements: [req.params.limit * 1],
+        nest: true,
+      }
+    );
+    for (let i = 0; i < grouping.length; i += 1) {
+      const score = await sequelize.query(
+        `select avg(score) as score from reviews group by burger_id having burger_id=?`,
+        {
+          type: QueryTypes.SELECT,
+          replacements: [grouping[i].burger_id],
+          raw: true,
+        }
+      );
+      grouping[i].Burger.score = Math.round(score[0].score * 10) / 10;
+    }
+    res.status(200).json({
+      data: grouping,
+    });
+  } catch (err) {
+    logger.log(err);
+    res.status(500).json({ code: "ERROR", error: err.stack });
+  }
+});
 
 // 리뷰 조회
 router.get("/", async (req, res) => {
