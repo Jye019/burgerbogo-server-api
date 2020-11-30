@@ -212,7 +212,7 @@ router.post("/", verifyToken, isDirector, async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const reviewNum = await sequelize.query(
-      `SELECT COUNT(*) as cnt FROM reviews WHERE burger_id=? AND deleted_at IS NOT NULL`,
+      `SELECT COUNT(*) as cnt FROM reviews WHERE burger_id=? AND deleted_at IS NULL`,
       { replacements: [req.params.id], type: QueryTypes.SELECT, raw: true }
     );
     let result = await Burger.findOne({
@@ -230,7 +230,7 @@ router.get("/:id", async (req, res) => {
       nest: true,
     });
     const score = await sequelize.query(
-      `SELECT AVG(score) AS score,AVG(sweet) AS sweet,AVG(sour) AS sour,AVG(salty) AS salty,AVG(spicy) AS spicy,AVG(greasy) AS greasy FROM reviews WHERE burger_id=? AND deleted_at is not null`,
+      `SELECT AVG(score) AS score,AVG(sweet) AS sweet,AVG(sour) AS sour,AVG(salty) AS salty,AVG(spicy) AS spicy,AVG(greasy) AS greasy FROM reviews WHERE burger_id=? AND deleted_at is null`,
       {
         replacements: [req.params.id],
         type: QueryTypes.SELECT,

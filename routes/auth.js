@@ -185,7 +185,7 @@ router.post('/login', async (req, res) => {
                                            { expiresIn: process.env.ACCESS_EXPIRESIN_TIME * 60, issuer: 'nsm',});
                     const refreshToken = jwt.sign({refreshkey: key}, 
                                             ( process.env.JWT_SECRET || 'xu5q!p1' ),
-                                            { expiresIn: process.env.REFRESH_EXPIRESIN_TIME * 60, issuer: 'nsm',});
+                                            { expiresIn: '14d', issuer: 'nsm',});
                     await User.update({refresh_key: key}, {
                         where: { email: userInfo.email }
                     });
