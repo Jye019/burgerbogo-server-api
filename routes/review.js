@@ -73,8 +73,16 @@ router.get("/", async (req, res) => {
           { model: Burger, attributes: ["name"] },
         ],
       });
-      const totalCount = await Review.count();
-      res.status(200).json({ meta: { totalCount }, data: result });
+      const totalCount = await sequelize.query(
+        `SELECT COUNT(*) as cnt FROM reviews WHERE deleted_at IS NULL`,
+        {
+          type: QueryTypes.SELECT,
+          raw: true,
+        }
+      );
+      res
+        .status(200)
+        .json({ meta: { totalCount: totalCount[0].cnt }, data: result });
     } else {
       let where = {};
       if (req.query.userId) {
@@ -93,6 +101,7 @@ router.get("/", async (req, res) => {
           ? (req.query.page - 1) * (req.query.limit ? req.query.limit : 10)
           : 0,
         where,
+        attributes: { exclude: ["burger_id"] },
         order: [["updated_at", "desc"]],
         include: [{ model: User, attributes: ["id", "nickname"] }],
         raw: true,
@@ -103,6 +112,7 @@ router.get("/", async (req, res) => {
         const myReview = await Review.findOne({
           where: { user_id: req.query.userId, burger_id: req.query.burgerId },
           include: [{ model: User, attributes: ["id", "nickname"] }],
+          attributes: { exclude: ["burger_id"] },
           raw: true,
           nest: true,
         });
@@ -216,7 +226,7 @@ router.delete("/", verifyToken, async (req, res) => {
         req.atoken.user_level === 10000
       ) {
         await Review.destroy({ where: { id: req.query.id } });
-        res.status(200).json({});
+        res.status(200).json({ code: "REVIEW_SUCCESS" });
       } else {
         res.status(401).json({ code: "REVIEW_WRONG_USER" });
       }
