@@ -44,7 +44,7 @@ exports.renewToken = async (req, res) => {
     const userInfo = await User.findOne({
       where: { refresh_key: refreshTokenJSON.refreshkey },
     });
-    if (userInfo && moment(new Date()) <= moment(refreshTokenJSON.exp * 1000)) {
+    if (userInfo && moment() <= moment(refreshTokenJSON.exp * 1000)) {
       const accessToken = jwt.sign(
         {
           id: userInfo.id,
