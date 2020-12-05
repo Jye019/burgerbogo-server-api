@@ -216,6 +216,15 @@ router.post('/detail', verifyToken, async(req, res) => {
     try {
         const {nickname, gender, birth_year} = req.body;
 
+        if( !( birth_year || birth_year === 0 ))
+            return res.status(406).json({ code: "AUTH_BIRTH_MISSING" });
+        if(Number.isNaN(parseInt(birth_year, 10)) || birth_year < 0)
+            return res.status(406).json({code: "AUTH_UNEXPECTED_BIRTH"});
+        if( !( gender || gender === 0 ))
+            return res.status(406).json({ code: "AUTH_GENDER_MISSING" });
+        if( Number.isNaN(parseInt(gender, 10)) || !(gender === 0 || gender === 1 || gender === 2) ) 
+            return res.status(406).json({ code: "AUTH_UNEXPECTED_GENDER" });
+
         if(nickname) {
             // 닉네임 validation 체크
             const nicknameRegExp = /^[ㄱ-ㅎ가-힣0-9]{1,10}$/;
