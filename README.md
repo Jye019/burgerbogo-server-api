@@ -46,12 +46,6 @@ MySQL Community, 8.0.20
 
 프리티어
 
-### 설정
-
-1. 인스턴스 식별자 : nsm-burgerbogo
-2. 마스터 사용자 이름 : admin
-3. 마스터 암호 : shTmfah1!
-
 ### 인스턴스 클래스
 
 버스터블 클래스, db.t2.micro (1 vCPUs/1 GiB RAM/Not EBS Optimized)
