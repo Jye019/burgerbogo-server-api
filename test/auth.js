@@ -104,7 +104,7 @@ describe('# [ AUTH ] 회원가입', () =>{
                 .post('/auth/join')
                 .set('content-type', 'application/json')
                 .send({email:'nsm200704@gmail.com',
-                       password: 'shTmfah1'})
+                       password: '1234567'})
                 .end((err, res) => {
                     if(err) 
                         done(err);
